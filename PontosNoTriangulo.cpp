@@ -33,7 +33,7 @@ using namespace std;
 #endif
 
 #ifdef __linux__
-#include <glut.h>
+#include <GL/glut.h>
 #endif
 
 #include "Ponto.h"
@@ -86,18 +86,18 @@ void GeraPontos(unsigned long int qtd, Ponto Min, Ponto Max)
 void CriaTrianguloDoCampoDeVisao()
 {
     Ponto vetor = Ponto(1,0,0);
-    
+
     TrianguloBase.insereVertice(Ponto(0,0,0));
     CampoDeVisao.insereVertice(Ponto(0,0,0));
-    
+
     vetor.rotacionaZ(45);
     TrianguloBase.insereVertice(vetor);
     CampoDeVisao.insereVertice(vetor);
-    
+
     vetor.rotacionaZ(-90);
     TrianguloBase.insereVertice(vetor);
     CampoDeVisao.insereVertice(vetor);
-    
+
 }
 // **********************************************************************
 // void PosicionaTrianguloDoCampoDeVisao()
@@ -108,7 +108,7 @@ void CriaTrianguloDoCampoDeVisao()
 void PosicionaTrianguloDoCampoDeVisao()
 {
     float tamanho = Tamanho.x * 0.25;
-    
+
     Ponto temp;
     for (int i=0;i<TrianguloBase.getNVertices();i++)
     {
@@ -139,21 +139,21 @@ void init()
     // Gera ou Carrega os pontos do cenario.
     // Note que o "aspect ratio" dos pontos deve ser o mesmo
     // da janela.
-    
+
     // PontosDoCenario.LePoligono("PontosDenteDeSerra.txt");
     GeraPontos(1000, Ponto(0,0), Ponto(500,500));
-    
+
     PontosDoCenario.obtemLimites(Min,Max);
     Min.x--;Min.y--;
     Max.x++;Max.y++;
-    
+
     Meio = (Max+Min) * 0.5; // Ponto central da janela
     Tamanho = (Max-Min);  // Tamanho da janela em X,Y
-    
+
     // Ajusta variaveis do triangulo que representa o campo de visao
     PosicaoDoCampoDeVisao = Meio;
     AnguloDoCampoDeVisao = 0;
-    
+
     // Cria o triangulo que representa o campo de visao
     CriaTrianguloDoCampoDeVisao();
     PosicionaTrianguloDoCampoDeVisao();
@@ -256,17 +256,17 @@ void display( void )
     //glPointSize(5);
     glColor3f(1,1,0); // R, G, B  [0..1]
     PontosDoCenario.desenhaVertices();
-    
+
     glLineWidth(3);
     glColor3f(1,0,0); // R, G, B  [0..1]
     CampoDeVisao.desenhaPoligono();
-    
+
     if (FoiClicado)
     {
         PontoClicado.imprime("- Ponto no universo: ", "\n");
         FoiClicado = false;
     }
-    
+
 	glutSwapBuffers();
 }
 // **********************************************************************

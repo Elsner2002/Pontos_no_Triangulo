@@ -23,7 +23,7 @@ using namespace std;
 #endif
 
 #ifdef __linux__
-#include <glut.h>
+#include <GL/glut.h>
 #endif
 
 #include "Ponto.h"
@@ -52,4 +52,4 @@ public:
     void imprimeVertices();
 };
 
-#endif 
+#endif
