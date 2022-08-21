@@ -296,7 +296,7 @@ void ContaTempo(double tempo)
 //  void keyboard ( unsigned char key, int x, int y )
 //
 // **********************************************************************
-
+bool fb==false;
 void keyboard ( unsigned char key, int x, int y )
 {
 
@@ -307,6 +307,9 @@ void keyboard ( unsigned char key, int x, int y )
 			break;
         case 't':
             ContaTempo(3);
+            break;
+        case 'f':
+            fb=!fb;
             break;
         case ' ':
             desenhaEixos = !desenhaEixos;
@@ -374,6 +377,36 @@ void Mouse(int button,int state,int x,int y)
     FoiClicado = true;
 }
 
+int dentro=0;
+Ponto eDentro[];
+
+void forcaBruta(Poligono pontos){
+     while(dentro>0){
+        eDentro[dentro]=0;
+        dentro--;
+    }
+    int cont=0;
+    while(cont<pontos.getNVertices()){
+        ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(0),p1);
+        ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(1),p2);
+        ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(2),p3);
+        if(p1.z<0&&p2.z<0&&p3.z<0){
+            eDentro[dentro]=pontos.getNVertices(cont);
+            pontos.getNVertices(cont)
+            dentro++;
+        }
+        cont++;
+    }
+}
+
+pintaVerde(Ponto pontos){
+    int cont=0;
+    while(cont<pontos.getNVertices()){
+        //pinta de verde
+        cont++;
+    }
+}
+
 // **********************************************************************
 //  void main ( int argc, char** argv )
 //
@@ -429,6 +462,12 @@ int  main ( int argc, char** argv )
     glutSpecialFunc ( arrow_keys );
 
     glutMouseFunc(Mouse);
+
+    if(fb==true){
+        //mudar a cor de todos os pontos para vermelho
+        forcaBruta(PontosDoCenario);
+        pintaVerde(eDentro);
+    }
 
     // inicia o tratamento dos eventos
     glutMainLoop ( );
