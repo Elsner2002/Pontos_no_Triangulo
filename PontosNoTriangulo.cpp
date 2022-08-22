@@ -401,8 +401,7 @@ void forcaBruta(Poligono pontos){
         ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(1),p2);
         ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(2),p3);
         if(p1.z<0&&p2.z<0&&p3.z<0){
-            eDentro[dentro]=pontos.getNVertices(cont);
-            pontos.getNVertices(cont)
+            eDentro[dentro]=pontos.getVertices(cont);
             dentro++;
         }
         cont++;
@@ -431,6 +430,24 @@ void criaEnvelope(){
         }
     }
     //desenha quadrado envolta com os pontos criados
+}
+
+int dentroE=0;
+Ponto dentroEnvelope[];
+
+void pontosEnvelope(Poligono pontos){
+   while(dentroE>0){
+        dentroEnvelope[dentroE]=0;
+        dentroE--;
+    }
+    int cont=0;
+    while(cont<pontos.getNVertices()){
+        if(pontos.getVertice(cont).x>envelopeMenorX&&pontos.getVertice(cont).x<envelopeMaiorX&&pontos.getVertice(cont).y>envelopeMenorY&&pontos.getVertice(cont).y<envelopeMaiorY){
+            dentroEnvelope[dentroE]=pontos.getVertices(cont);
+            dentro++;
+        }
+        cont++;
+    } 
 }
 
 pintaVerde(Ponto pontos){
@@ -522,7 +539,9 @@ int  main ( int argc, char** argv )
         criaEnvelope();
         pintaVermelho(PontosDoCenario);
         pontosEnvelope(PontosDoCenario);
-        
+        pintaAmarelo(dentroEnvelope);
+        forcaBruta(dentroEnvelope);
+        pintaVerde(eDentro);
     }
 
     // inicia o tratamento dos eventos
