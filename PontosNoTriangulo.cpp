@@ -297,6 +297,7 @@ void ContaTempo(double tempo)
 //
 // **********************************************************************
 bool fb==false;
+bool envelope==false;
 void keyboard ( unsigned char key, int x, int y )
 {
 
@@ -309,11 +310,20 @@ void keyboard ( unsigned char key, int x, int y )
             ContaTempo(3);
             break;
         case 'f':
+            if(envelope==true){
+                envelope==false;
+            }
             fb=!fb;
+            break;
+        case 'e':
+            if(fb==true){
+                fb==false;
+            }
+            envelope=!envelope;
             break;
         case ' ':
             desenhaEixos = !desenhaEixos;
-        break;
+            break;
 		default:
 			break;
 	}
@@ -399,10 +409,50 @@ void forcaBruta(Poligono pontos){
     }
 }
 
+int envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
+
+void criaEnvelope(){ 
+    envelopeMaiorX=TrianguloBase.getVertice(0).x;
+    envelopeMenorX=TrianguloBase.getVertice(0).x;
+    envelopeMaiorY=TrianguloBase.getVertice(0).y;
+    envelopeMenorY=TrianguloBase.getVertice(0).y;
+    for(int i=1; i<3;i++){
+        if(TrianguloBase.getVertice(i).x>envelopeMaiorX){
+            envelopeMaiorX=TrianguloBase.getVertice(i).x;
+        }
+        if(TrianguloBase.getVertice(i).x<envelopeMenorX){
+            envelopeMenorX=TrianguloBase.getVertice(i).x;
+        }
+        if(TrianguloBase.getVertice(i).y>envelopeMaiorY){
+            envelopeMaiorY=TrianguloBase.getVertice(i).y;
+        }
+        if(TrianguloBase.getVertice(i).y<envelopeMenorY){
+            envelopeMenorY=TrianguloBase.getVertice(i).y;
+        }
+    }
+    //desenha quadrado envolta com os pontos criados
+}
+
 pintaVerde(Ponto pontos){
     int cont=0;
     while(cont<pontos.getNVertices()){
         //pinta de verde
+        cont++;
+    }
+}
+
+pintaVermelho(Ponto pontos){
+    int cont=0;
+    while(cont<pontos.getNVertices()){
+        //pinta de vermelho
+        cont++;
+    }
+}
+
+pintaAmarelo(Ponto pontos){
+    int cont=0;
+    while(cont<pontos.getNVertices()){
+        //pinta de amarelo
         cont++;
     }
 }
@@ -464,9 +514,15 @@ int  main ( int argc, char** argv )
     glutMouseFunc(Mouse);
 
     if(fb==true){
-        //mudar a cor de todos os pontos para vermelho
+        pintaVermelho(PontosDoCenario);
         forcaBruta(PontosDoCenario);
         pintaVerde(eDentro);
+    }
+    if(envelope==true){
+        criaEnvelope();
+        pintaVermelho(PontosDoCenario);
+        pontosEnvelope(PontosDoCenario);
+        
     }
 
     // inicia o tratamento dos eventos
