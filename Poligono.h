@@ -50,6 +50,7 @@ public:
     void getAresta(int i, Ponto &P1, Ponto &P2);
     void alteraVertice(int i, Ponto P);
     void imprimeVertices();
+	void clear();
 };
 
 #endif
