@@ -14,6 +14,7 @@
 // Abra o menu Product -> Scheme -> Edit Scheme -> Use custom working directory
 // Selecione a pasta onde voce descompactou o ZIP que continha este arquivo.
 
+#include <cstddef>
 #include <iostream>
 #include <cmath>
 #include <ctime>
@@ -38,13 +39,13 @@ using namespace std;
 
 #include "Ponto.h"
 #include "Poligono.h"
-
 #include "Temporizador.h"
+
 Temporizador T;
 double AccumDeltaT=0;
 
 // Variaveis que controlam o triangulo do campo de visao
-Poligono PontosDoCenario, CampoDeVisao, TrianguloBase;
+Poligono PontosDoCenario, CampoDeVisao, TrianguloBase, eDentro, dentroEnvelope;
 float AnguloDoCampoDeVisao=0.0;
 
 // Limites logicos da area de desenho
@@ -53,8 +54,16 @@ Ponto PosicaoDoCampoDeVisao, PontoClicado;
 
 bool desenhaEixos = true;
 bool FoiClicado = false;
+bool fb=false;
+bool envelope=false;
 
-
+void forcaBruta(Poligono pontos);
+void criaEnvelope();
+void desenhaEnvelope();
+void pontosEnvelope(Poligono pontos);
+void pintaVerde(Poligono pontos);
+void pintaVermelho(Poligono pontos);
+void pintaAmarelo(Poligono pontos);
 
 // **********************************************************************
 // GeraPontos(int qtd)
@@ -62,18 +71,18 @@ bool FoiClicado = false;
 // **********************************************************************
 void GeraPontos(unsigned long int qtd, Ponto Min, Ponto Max)
 {
-    time_t t;
-    Ponto Escala;
-    Escala = (Max - Min) * (1.0/1000.0);
-    srand((unsigned) time(&t));
-    for (int i = 0;i<qtd; i++)
-    {
-        float x = rand() % 1000;
-        float y = rand() % 1000;
-        x = x * Escala.x + Min.x;
-        y = y * Escala.y + Min.y;
-        PontosDoCenario.insereVertice(Ponto(x,y));
-    }
+	time_t t;
+	Ponto Escala;
+	Escala = (Max - Min) * (1.0/1000.0);
+	srand((unsigned) time(&t));
+	for (int i = 0;i<qtd; i++)
+	{
+		float x = rand() % 1000;
+		float y = rand() % 1000;
+		x = x * Escala.x + Min.x;
+		y = y * Escala.y + Min.y;
+		PontosDoCenario.insereVertice(Ponto(x,y));
+	}
 }
 
 // **********************************************************************
@@ -85,20 +94,20 @@ void GeraPontos(unsigned long int qtd, Ponto Min, Ponto Max)
 // **********************************************************************
 void CriaTrianguloDoCampoDeVisao()
 {
-    Ponto vetor = Ponto(1,0,0);
+	Ponto vetor = Ponto(1,0,0);
 
-    TrianguloBase.insereVertice(Ponto(0,0,0));
-    CampoDeVisao.insereVertice(Ponto(0,0,0));
+	TrianguloBase.insereVertice(Ponto(0,0,0));
+	CampoDeVisao.insereVertice(Ponto(0,0,0));
 
-    vetor.rotacionaZ(45);
-    TrianguloBase.insereVertice(vetor);
-    CampoDeVisao.insereVertice(vetor);
+	vetor.rotacionaZ(45);
+	TrianguloBase.insereVertice(vetor);
+	CampoDeVisao.insereVertice(vetor);
 
-    vetor.rotacionaZ(-90);
-    TrianguloBase.insereVertice(vetor);
-    CampoDeVisao.insereVertice(vetor);
-
+	vetor.rotacionaZ(-90);
+	TrianguloBase.insereVertice(vetor);
+	CampoDeVisao.insereVertice(vetor);
 }
+
 // **********************************************************************
 // void PosicionaTrianguloDoCampoDeVisao()
 //  Posiciona o campo de vis�o na posicao PosicaoDoCampoDeVisao,
@@ -107,15 +116,15 @@ void CriaTrianguloDoCampoDeVisao()
 // **********************************************************************
 void PosicionaTrianguloDoCampoDeVisao()
 {
-    float tamanho = Tamanho.x * 0.25;
+	float tamanho = Tamanho.x * 0.25;
 
-    Ponto temp;
-    for (int i=0;i<TrianguloBase.getNVertices();i++)
-    {
-        temp = TrianguloBase.getVertice(i);
-        temp.rotacionaZ(AnguloDoCampoDeVisao);
-        CampoDeVisao.alteraVertice(i, PosicaoDoCampoDeVisao + temp*tamanho);
-    }
+	Ponto temp;
+	for (int i=0;i<TrianguloBase.getNVertices();i++)
+	{
+		temp = TrianguloBase.getVertice(i);
+		temp.rotacionaZ(AnguloDoCampoDeVisao);
+		CampoDeVisao.alteraVertice(i, PosicaoDoCampoDeVisao + temp*tamanho);
+	}
 }
 // **********************************************************************
 // void AvancaCampoDeVisao(float distancia)
@@ -123,9 +132,9 @@ void PosicionaTrianguloDoCampoDeVisao()
 // **********************************************************************
 void AvancaCampoDeVisao(float distancia)
 {
-    Ponto vetor = Ponto(1,0,0);
-    vetor.rotacionaZ(AnguloDoCampoDeVisao);
-    PosicaoDoCampoDeVisao = PosicaoDoCampoDeVisao + vetor * distancia;
+	Ponto vetor = Ponto(1,0,0);
+	vetor.rotacionaZ(AnguloDoCampoDeVisao);
+	PosicaoDoCampoDeVisao = PosicaoDoCampoDeVisao + vetor * distancia;
 }
 // **********************************************************************
 // void init()
@@ -133,30 +142,30 @@ void AvancaCampoDeVisao(float distancia)
 // **********************************************************************
 void init()
 {
-    // Define a cor do fundo da tela (AZUL)
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+	// Define a cor do fundo da tela (AZUL)
+	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 
-    // Gera ou Carrega os pontos do cenario.
-    // Note que o "aspect ratio" dos pontos deve ser o mesmo
-    // da janela.
+	// Gera ou Carrega os pontos do cenario.
+	// Note que o "aspect ratio" dos pontos deve ser o mesmo
+	// da janela.
 
-    // PontosDoCenario.LePoligono("PontosDenteDeSerra.txt");
-    GeraPontos(1000, Ponto(0,0), Ponto(500,500));
+	// PontosDoCenario.LePoligono("PontosDenteDeSerra.txt");
+	GeraPontos(1000, Ponto(0,0), Ponto(500,500));
 
-    PontosDoCenario.obtemLimites(Min,Max);
-    Min.x--;Min.y--;
-    Max.x++;Max.y++;
+	PontosDoCenario.obtemLimites(Min,Max);
+	Min.x--;Min.y--;
+	Max.x++;Max.y++;
 
-    Meio = (Max+Min) * 0.5; // Ponto central da janela
-    Tamanho = (Max-Min);  // Tamanho da janela em X,Y
+	Meio = (Max+Min) * 0.5; // Ponto central da janela
+	Tamanho = (Max-Min);  // Tamanho da janela em X,Y
 
-    // Ajusta variaveis do triangulo que representa o campo de visao
-    PosicaoDoCampoDeVisao = Meio;
-    AnguloDoCampoDeVisao = 0;
+	// Ajusta variaveis do triangulo que representa o campo de visao
+	PosicaoDoCampoDeVisao = Meio;
+	AnguloDoCampoDeVisao = 0;
 
-    // Cria o triangulo que representa o campo de visao
-    CriaTrianguloDoCampoDeVisao();
-    PosicionaTrianguloDoCampoDeVisao();
+	// Cria o triangulo que representa o campo de visao
+	CriaTrianguloDoCampoDeVisao();
+	PosicionaTrianguloDoCampoDeVisao();
 }
 
 double nFrames=0;
@@ -166,25 +175,25 @@ double TempoTotal=0;
 // **********************************************************************
 void animate()
 {
-    double dt;
-    dt = T.getDeltaT();
-    AccumDeltaT += dt;
-    TempoTotal += dt;
-    nFrames++;
+	double dt;
+	dt = T.getDeltaT();
+	AccumDeltaT += dt;
+	TempoTotal += dt;
+	nFrames++;
 
-    if (AccumDeltaT > 1.0/30) // fixa a atualiza��o da tela em 30
-    {
-        AccumDeltaT = 0;
-        glutPostRedisplay();
-    }
-    if (TempoTotal > 5.0)
-    {
-        cout << "Tempo Acumulado: "  << TempoTotal << " segundos. " ;
-        cout << "Nros de Frames sem desenho: " << nFrames << endl;
-        cout << "FPS(sem desenho): " << nFrames/TempoTotal << endl;
-        TempoTotal = 0;
-        nFrames = 0;
-    }
+	if (AccumDeltaT > 1.0/30) // fixa a atualiza��o da tela em 30
+	{
+		AccumDeltaT = 0;
+		glutPostRedisplay();
+	}
+	if (TempoTotal > 5.0)
+	{
+		cout << "Tempo Acumulado: "  << TempoTotal << " segundos. " ;
+		cout << "Nros de Frames sem desenho: " << nFrames << endl;
+		cout << "FPS(sem desenho): " << nFrames/TempoTotal << endl;
+		TempoTotal = 0;
+		nFrames = 0;
+	}
 }
 // **********************************************************************
 //  void reshape( int w, int h )
@@ -192,18 +201,18 @@ void animate()
 // **********************************************************************
 void reshape( int w, int h )
 {
-    // Reset the coordinate system before modifying
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    // Define a area a ser ocupada pela area OpenGL dentro da Janela
-    glViewport(0, 0, w, h);
-    // Define os limites logicos da area OpenGL dentro da Janela
-    glOrtho(Min.x,Max.x,
-            Min.y,Max.y,
-            0,1);
+	// Reset the coordinate system before modifying
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	// Define a area a ser ocupada pela area OpenGL dentro da Janela
+	glViewport(0, 0, w, h);
+	// Define os limites logicos da area OpenGL dentro da Janela
+	glOrtho(Min.x,Max.x,
+			Min.y,Max.y,
+			0,1);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 // **********************************************************************
 //
@@ -211,22 +220,22 @@ void reshape( int w, int h )
 void DesenhaEixos()
 {
 
-    glBegin(GL_LINES);
-    //  eixo horizontal
-        glVertex2f(Min.x,Meio.y);
-        glVertex2f(Max.x,Meio.y);
-    //  eixo vertical
-        glVertex2f(Meio.x,Min.y);
-        glVertex2f(Meio.x,Max.y);
-    glEnd();
+	glBegin(GL_LINES);
+	//  eixo horizontal
+	glVertex2f(Min.x,Meio.y);
+	glVertex2f(Max.x,Meio.y);
+	//  eixo vertical
+	glVertex2f(Meio.x,Min.y);
+	glVertex2f(Meio.x,Max.y);
+	glEnd();
 }
 
 void DesenhaLinha(Ponto P1, Ponto P2)
 {
-    glBegin(GL_LINES);
-        glVertex3f(P1.x,P1.y,P1.z);
-        glVertex3f(P2.x,P2.y,P2.z);
-    glEnd();
+	glBegin(GL_LINES);
+	glVertex3f(P1.x,P1.y,P1.z);
+	glVertex3f(P2.x,P2.y,P2.z);
+	glEnd();
 }
 // **********************************************************************
 //  void display( void )
@@ -238,34 +247,47 @@ void display( void )
 	// Limpa a tela coma cor de fundo
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    // Define os limites l�gicos da �rea OpenGL dentro da Janela
+	// Define os limites l�gicos da �rea OpenGL dentro da Janela
 	glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+	glLoadIdentity();
 
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	// Coloque aqui as chamadas das rotinas que desenham os objetos
 	// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-    if (desenhaEixos)
-    {
-        glLineWidth(1);
-        glColor3f(1,1,1); // R, G, B  [0..1]
-        DesenhaEixos();
-    }
+	if (desenhaEixos)
+	{
+		glLineWidth(1);
+		glColor3f(1,1,1); // R, G, B  [0..1]
+		DesenhaEixos();
+	}
 
-    //glPointSize(5);
-    glColor3f(1,1,0); // R, G, B  [0..1]
-    PontosDoCenario.desenhaVertices();
+	//glPointSize(5);
+	glColor3f(1,1,0); // R, G, B  [0..1]
+	PontosDoCenario.desenhaVertices();
 
-    glLineWidth(3);
-    glColor3f(1,0,0); // R, G, B  [0..1]
-    CampoDeVisao.desenhaPoligono();
+	glLineWidth(3);
+	glColor3f(1,0,0); // R, G, B  [0..1]
+	CampoDeVisao.desenhaPoligono();
 
-    if (FoiClicado)
-    {
-        PontoClicado.imprime("- Ponto no universo: ", "\n");
-        FoiClicado = false;
-    }
+	if (fb==true){
+		pintaVermelho(PontosDoCenario);
+		forcaBruta(PontosDoCenario);
+		pintaVerde(eDentro);
+	} else if (envelope==true){
+		criaEnvelope();
+		pintaVermelho(PontosDoCenario);
+		pontosEnvelope(PontosDoCenario);
+		pintaAmarelo(dentroEnvelope);
+		forcaBruta(dentroEnvelope);
+		pintaVerde(eDentro);
+	}
+
+	if (FoiClicado)
+	{
+		PontoClicado.imprime("- Ponto no universo: ", "\n");
+		FoiClicado = false;
+	}
 
 	glutSwapBuffers();
 }
@@ -276,28 +298,26 @@ void display( void )
 // **********************************************************************
 void ContaTempo(double tempo)
 {
-    Temporizador T;
+	Temporizador T;
 
-    unsigned long cont = 0;
-    cout << "Inicio contagem de " << tempo << "segundos ..." << flush;
-    while(true)
-    {
-        tempo -= T.getDeltaT();
-        cont++;
-        if (tempo <= 0.0)
-        {
-            cout << "fim! - Passaram-se " << cont << " frames." << endl;
-            break;
-        }
-    }
+	unsigned long cont = 0;
+	cout << "Inicio contagem de " << tempo << "segundos ..." << flush;
+	while(true)
+	{
+		tempo -= T.getDeltaT();
+		cont++;
+		if (tempo <= 0.0)
+		{
+			cout << "fim! - Passaram-se " << cont << " frames." << endl;
+			break;
+		}
+	}
 
 }
 // **********************************************************************
 //  void keyboard ( unsigned char key, int x, int y )
 //
 // **********************************************************************
-bool fb==false;
-bool envelope==false;
 void keyboard ( unsigned char key, int x, int y )
 {
 
@@ -306,29 +326,29 @@ void keyboard ( unsigned char key, int x, int y )
 		case 27:        // Termina o programa qdo
 			exit ( 0 );   // a tecla ESC for pressionada
 			break;
-        case 't':
-            ContaTempo(3);
-            break;
-        case 'f':
-            if(envelope==true){
-                envelope==false;
-            }
-            fb=!fb;
-            break;
-        case 'e':
-            if(fb==true){
-                fb==false;
-            }
-            envelope=!envelope;
-            break;
-        case ' ':
-            desenhaEixos = !desenhaEixos;
-            break;
+		case 't':
+			ContaTempo(3);
+			break;
+		case 'f':
+			if(envelope==true){
+				envelope=false;
+			}
+			fb=!fb;
+			break;
+		case 'e':
+			if(fb==true){
+				fb=false;
+			}
+			envelope=!envelope;
+			break;
+		case ' ':
+			desenhaEixos = !desenhaEixos;
+			break;
 		default:
 			break;
 	}
-    //PosicionaTrianguloDoCampoDeVisao();
-    glutPostRedisplay();
+	//PosicionaTrianguloDoCampoDeVisao();
+	glutPostRedisplay();
 }
 // **********************************************************************
 //  void arrow_keys ( int a_keys, int x, int y )
@@ -337,25 +357,25 @@ void arrow_keys ( int a_keys, int x, int y )
 {
 	switch ( a_keys )
 	{
-        case GLUT_KEY_LEFT:       // Se pressionar LEFT
-            AnguloDoCampoDeVisao+=2;
-            break;
-        case GLUT_KEY_RIGHT:       // Se pressionar RIGHT
-            AnguloDoCampoDeVisao-=2;
-            break;
+		case GLUT_KEY_LEFT:       // Se pressionar LEFT
+			AnguloDoCampoDeVisao+=2;
+			break;
+		case GLUT_KEY_RIGHT:       // Se pressionar RIGHT
+			AnguloDoCampoDeVisao-=2;
+			break;
 		case GLUT_KEY_UP:
-            AvancaCampoDeVisao(2);
-            break;
-	    case GLUT_KEY_DOWN:
-            AvancaCampoDeVisao(-2);
+			AvancaCampoDeVisao(2);
+			break;
+		case GLUT_KEY_DOWN:
+			AvancaCampoDeVisao(-2);
 			break;
 		default:
 			break;
 	}
-    PosicionaTrianguloDoCampoDeVisao();
-    cout << "Triangulo Base: " << endl;
-    TrianguloBase.imprimeVertices();
-    glutPostRedisplay();
+	PosicionaTrianguloDoCampoDeVisao();
+	cout << "Triangulo Base: " << endl;
+	TrianguloBase.imprimeVertices();
+	glutPostRedisplay();
 }
 // **********************************************************************
 // Esta fun��o captura o clique do botao direito do mouse sobre a �rea de
@@ -365,113 +385,104 @@ void arrow_keys ( int a_keys, int x, int y )
 // **********************************************************************
 void Mouse(int button,int state,int x,int y)
 {
-    GLint viewport[4];
-    GLdouble modelview[16],projection[16];
-    GLfloat wx=x,wy,wz;
-    GLdouble ox=0.0,oy=0.0,oz=0.0;
+	GLint viewport[4];
+	GLdouble modelview[16],projection[16];
+	GLfloat wx=x,wy,wz;
+	GLdouble ox=0.0,oy=0.0,oz=0.0;
 
-    if(state!=GLUT_DOWN)
-      return;
-    if(button!=GLUT_RIGHT_BUTTON)
-     return;
-    cout << "Botao da direita! ";
+	if(state!=GLUT_DOWN)
+		return;
+	if(button!=GLUT_RIGHT_BUTTON)
+		return;
+	cout << "Botao da direita! ";
 
-    glGetIntegerv(GL_VIEWPORT,viewport);
-    y=viewport[3]-y;
-    wy=y;
-    glGetDoublev(GL_MODELVIEW_MATRIX,modelview);
-    glGetDoublev(GL_PROJECTION_MATRIX,projection);
-    glReadPixels(x,y,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&wz);
-    gluUnProject(wx,wy,wz,modelview,projection,viewport,&ox,&oy,&oz);
-    PontoClicado = Ponto(ox,oy,oz);
-    FoiClicado = true;
+	glGetIntegerv(GL_VIEWPORT,viewport);
+	y=viewport[3]-y;
+	wy=y;
+	glGetDoublev(GL_MODELVIEW_MATRIX,modelview);
+	glGetDoublev(GL_PROJECTION_MATRIX,projection);
+	glReadPixels(x,y,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&wz);
+	gluUnProject(wx,wy,wz,modelview,projection,viewport,&ox,&oy,&oz);
+	PontoClicado = Ponto(ox,oy,oz);
+	FoiClicado = true;
 }
 
-int dentro=0;
-Ponto eDentro[];
-
 void forcaBruta(Poligono pontos){
-     while(dentro>0){
-        eDentro[dentro]=0;
-        dentro--;
-    }
-    int cont=0;
-    while(cont<pontos.getNVertices()){
-        ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(0),p1);
-        ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(1),p2);
-        ProdVetorial(pontos.getVertice(cont),Triangulo.getVertice(2),p3);
-        if(p1.z<0&&p2.z<0&&p3.z<0){
-            eDentro[dentro]=pontos.getVertices(cont);
-            dentro++;
-        }
-        cont++;
-    }
+	eDentro.clear();
+	Ponto p1, p2, p3;
+
+	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
+		ProdVetorial(pontos.getVertice(i), TrianguloBase.getVertice(0), p1);
+		ProdVetorial(pontos.getVertice(i), TrianguloBase.getVertice(1), p2);
+		ProdVetorial(pontos.getVertice(i), TrianguloBase.getVertice(2), p3);
+
+		if(p1.z < 0 && p2.z < 0 && p3.z < 0){
+			eDentro.insereVertice(pontos.getVertice(i));
+		}
+	}
 }
 
 int envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
 
-void criaEnvelope(){ 
-    envelopeMaiorX=TrianguloBase.getVertice(0).x;
-    envelopeMenorX=TrianguloBase.getVertice(0).x;
-    envelopeMaiorY=TrianguloBase.getVertice(0).y;
-    envelopeMenorY=TrianguloBase.getVertice(0).y;
-    for(int i=1; i<3;i++){
-        if(TrianguloBase.getVertice(i).x>envelopeMaiorX){
-            envelopeMaiorX=TrianguloBase.getVertice(i).x;
-        }
-        if(TrianguloBase.getVertice(i).x<envelopeMenorX){
-            envelopeMenorX=TrianguloBase.getVertice(i).x;
-        }
-        if(TrianguloBase.getVertice(i).y>envelopeMaiorY){
-            envelopeMaiorY=TrianguloBase.getVertice(i).y;
-        }
-        if(TrianguloBase.getVertice(i).y<envelopeMenorY){
-            envelopeMenorY=TrianguloBase.getVertice(i).y;
-        }
-    }
-    //desenha quadrado envolta com os pontos criados
+void criaEnvelope(){
+	envelopeMaiorX=TrianguloBase.getVertice(0).x;
+	envelopeMenorX=TrianguloBase.getVertice(0).x;
+	envelopeMaiorY=TrianguloBase.getVertice(0).y;
+	envelopeMenorY=TrianguloBase.getVertice(0).y;
+	for(int i=1; i<3;i++){
+		if(TrianguloBase.getVertice(i).x>envelopeMaiorX){
+			envelopeMaiorX=TrianguloBase.getVertice(i).x;
+		}
+		if(TrianguloBase.getVertice(i).x<envelopeMenorX){
+			envelopeMenorX=TrianguloBase.getVertice(i).x;
+		}
+		if(TrianguloBase.getVertice(i).y>envelopeMaiorY){
+			envelopeMaiorY=TrianguloBase.getVertice(i).y;
+		}
+		if(TrianguloBase.getVertice(i).y<envelopeMenorY){
+			envelopeMenorY=TrianguloBase.getVertice(i).y;
+		}
+	}
 }
 
-int dentroE=0;
-Ponto dentroEnvelope[];
+void desenhaEnvelope() {
+
+}
 
 void pontosEnvelope(Poligono pontos){
-   while(dentroE>0){
-        dentroEnvelope[dentroE]=0;
-        dentroE--;
-    }
-    int cont=0;
-    while(cont<pontos.getNVertices()){
-        if(pontos.getVertice(cont).x>envelopeMenorX&&pontos.getVertice(cont).x<envelopeMaiorX&&pontos.getVertice(cont).y>envelopeMenorY&&pontos.getVertice(cont).y<envelopeMaiorY){
-            dentroEnvelope[dentroE]=pontos.getVertices(cont);
-            dentro++;
-        }
-        cont++;
-    } 
+	dentroEnvelope.clear();
+
+	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
+		if (
+			pontos.getVertice(i).x > envelopeMenorX &&
+			pontos.getVertice(i).x < envelopeMaiorX &&
+			pontos.getVertice(i).y > envelopeMenorY &&
+			pontos.getVertice(i).y < envelopeMaiorY
+		){
+			dentroEnvelope.insereVertice(pontos.getVertice(i));
+		}
+	}
 }
 
-pintaVerde(Ponto pontos){
-    int cont=0;
-    while(cont<pontos.getNVertices()){
-        //pinta de verde
-        cont++;
-    }
+void pintaVerde(Poligono pontos){
+	int cont=0;
+	while(cont<pontos.getNVertices()){
+		cont++;
+	}
 }
 
-pintaVermelho(Ponto pontos){
-    int cont=0;
-    while(cont<pontos.getNVertices()){
-        //pinta de vermelho
-        cont++;
-    }
+void pintaVermelho(Poligono pontos){
+	int cont=0;
+	while(cont<pontos.getNVertices()){
+		cont++;
+	}
 }
 
-pintaAmarelo(Ponto pontos){
-    int cont=0;
-    while(cont<pontos.getNVertices()){
-        //pinta de amarelo
-        cont++;
-    }
+void pintaAmarelo(Poligono pontos){
+	int cont=0;
+	while(cont<pontos.getNVertices()){
+		cont++;
+	}
 }
 
 // **********************************************************************
@@ -480,72 +491,58 @@ pintaAmarelo(Ponto pontos){
 // **********************************************************************
 int  main ( int argc, char** argv )
 {
-    cout << "Programa OpenGL" << endl;
+	cout << "Programa OpenGL" << endl;
 
-    glutInit            ( &argc, argv );
-    glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB );
-    glutInitWindowPosition (0,0);
+	glutInit            ( &argc, argv );
+	glutInitDisplayMode (GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB );
+	glutInitWindowPosition (0,0);
 
-    // Define o tamanho inicial da janela grafica do programa
-    glutInitWindowSize  ( 500, 500);
+	// Define o tamanho inicial da janela grafica do programa
+	glutInitWindowSize  ( 500, 500);
 
-    // Cria a janela na tela, definindo o nome da
-    // que aparecera na barra de titulo da janela.
-    glutCreateWindow    ( "Poligonos em OpenGL" );
+	// Cria a janela na tela, definindo o nome da
+	// que aparecera na barra de titulo da janela.
+	glutCreateWindow    ( "Poligonos em OpenGL" );
 
-    // executa algumas inicializa��es
-    init ();
+	// executa algumas inicializa��es
+	init ();
 
-    // Define que o tratador de evento para
-    // o redesenho da tela. A funcao "display"
-    // ser� chamada automaticamente quando
-    // for necess�rio redesenhar a janela
-    glutDisplayFunc ( display );
+	// Define que o tratador de evento para
+	// o redesenho da tela. A funcao "display"
+	// ser� chamada automaticamente quando
+	// for necess�rio redesenhar a janela
+	glutDisplayFunc ( display );
 
-    // Define que o tratador de evento para
-    // o invalida��o da tela. A funcao "display"
-    // ser� chamada automaticamente sempre que a
-    // m�quina estiver ociosa (idle)
-    glutIdleFunc(animate);
+	// Define que o tratador de evento para
+	// o invalida��o da tela. A funcao "display"
+	// ser� chamada automaticamente sempre que a
+	// m�quina estiver ociosa (idle)
+	glutIdleFunc(animate);
 
-    // Define que o tratador de evento para
-    // o redimensionamento da janela. A funcao "reshape"
-    // ser� chamada automaticamente quando
-    // o usu�rio alterar o tamanho da janela
-    glutReshapeFunc ( reshape );
+	// Define que o tratador de evento para
+	// o redimensionamento da janela. A funcao "reshape"
+	// ser� chamada automaticamente quando
+	// o usu�rio alterar o tamanho da janela
+	glutReshapeFunc ( reshape );
 
-    // Define que o tratador de evento para
-    // as teclas. A funcao "keyboard"
-    // ser� chamada automaticamente sempre
-    // o usu�rio pressionar uma tecla comum
-    glutKeyboardFunc ( keyboard );
+	// Define que o tratador de evento para
+	// as teclas. A funcao "keyboard"
+	// ser� chamada automaticamente sempre
+	// o usu�rio pressionar uma tecla comum
+	glutKeyboardFunc ( keyboard );
 
-    // Define que o tratador de evento para
-    // as teclas especiais(F1, F2,... ALT-A,
-    // ALT-B, Teclas de Seta, ...).
-    // A funcao "arrow_keys" ser� chamada
-    // automaticamente sempre o usu�rio
-    // pressionar uma tecla especial
-    glutSpecialFunc ( arrow_keys );
+	// Define que o tratador de evento para
+	// as teclas especiais(F1, F2,... ALT-A,
+	// ALT-B, Teclas de Seta, ...).
+	// A funcao "arrow_keys" ser� chamada
+	// automaticamente sempre o usu�rio
+	// pressionar uma tecla especial
+	glutSpecialFunc ( arrow_keys );
 
-    glutMouseFunc(Mouse);
+	glutMouseFunc(Mouse);
 
-    if(fb==true){
-        pintaVermelho(PontosDoCenario);
-        forcaBruta(PontosDoCenario);
-        pintaVerde(eDentro);
-    }
-    if(envelope==true){
-        criaEnvelope();
-        pintaVermelho(PontosDoCenario);
-        pontosEnvelope(PontosDoCenario);
-        pintaAmarelo(dentroEnvelope);
-        forcaBruta(dentroEnvelope);
-        pintaVerde(eDentro);
-    }
+	// inicia o tratamento dos eventos
+	glutMainLoop ( );
 
-    // inicia o tratamento dos eventos
-    glutMainLoop ( );
-
-    return 0;
+	return 0;
 }
