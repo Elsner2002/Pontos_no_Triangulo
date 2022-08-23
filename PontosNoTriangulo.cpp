@@ -61,9 +61,9 @@ void forcaBruta(Poligono pontos);
 void criaEnvelope();
 void desenhaEnvelope();
 void pontosEnvelope(Poligono pontos);
-void pintaVerde(Poligono pontos);
-void pintaVermelho(Poligono pontos);
-void pintaAmarelo(Poligono pontos);
+void pintaPoligono(
+	Poligono poligono, GLfloat red, GLfloat green, GLfloat blue
+);
 
 // **********************************************************************
 // GeraPontos(int qtd)
@@ -271,16 +271,17 @@ void display( void )
 	CampoDeVisao.desenhaPoligono();
 
 	if (fb==true){
-		pintaVermelho(PontosDoCenario);
+		pintaPoligono(PontosDoCenario, 1.0, 0.0, 0.0);
 		forcaBruta(PontosDoCenario);
-		pintaVerde(eDentro);
+		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
 	} else if (envelope==true){
 		criaEnvelope();
-		pintaVermelho(PontosDoCenario);
+		pintaPoligono(PontosDoCenario, 1.0, 0.0, 0.0);
 		pontosEnvelope(PontosDoCenario);
-		pintaAmarelo(dentroEnvelope);
+		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
+		pintaPoligono(dentroEnvelope, 1.0, 1.0, 0.0);
 		forcaBruta(dentroEnvelope);
-		pintaVerde(eDentro);
+		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
 	}
 
 	if (FoiClicado)
@@ -320,7 +321,6 @@ void ContaTempo(double tempo)
 // **********************************************************************
 void keyboard ( unsigned char key, int x, int y )
 {
-
 	switch ( key )
 	{
 		case 27:        // Termina o programa qdo
@@ -330,13 +330,13 @@ void keyboard ( unsigned char key, int x, int y )
 			ContaTempo(3);
 			break;
 		case 'f':
-			if(envelope==true){
+			if(envelope){
 				envelope=false;
 			}
-			fb=!fb;
+			fb =! fb;
 			break;
 		case 'e':
-			if(fb==true){
+			if(fb){
 				fb=false;
 			}
 			envelope=!envelope;
@@ -347,7 +347,7 @@ void keyboard ( unsigned char key, int x, int y )
 		default:
 			break;
 	}
-	//PosicionaTrianguloDoCampoDeVisao();
+
 	glutPostRedisplay();
 }
 // **********************************************************************
@@ -464,24 +464,13 @@ void pontosEnvelope(Poligono pontos){
 	}
 }
 
-void pintaVerde(Poligono pontos){
-	int cont=0;
-	while(cont<pontos.getNVertices()){
-		cont++;
-	}
-}
-
-void pintaVermelho(Poligono pontos){
-	int cont=0;
-	while(cont<pontos.getNVertices()){
-		cont++;
-	}
-}
-
-void pintaAmarelo(Poligono pontos){
-	int cont=0;
-	while(cont<pontos.getNVertices()){
-		cont++;
+void pintaPoligono(
+	Poligono poligono, GLfloat red, GLfloat green, GLfloat blue
+) {
+	for (std::size_t i = 0; i < poligono.getNVertices(); i++) {
+		Ponto vertice = poligono.getVertice(i);
+		glColor3f(red, green, blue);
+		glVertex3f(vertice.x, vertice.y, vertice.z);
 	}
 }
 
