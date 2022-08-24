@@ -52,7 +52,7 @@ float envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
 // Limites logicos da area de desenho
 Ponto Min, Max, Tamanho, Meio;
 Ponto PosicaoDoCampoDeVisao, PontoClicado;
-//se desenhar envelope nao funcionar apagar aqui git commit -m "feat(PontosNoTriangulo): draw Bound Box"
+//se desenhar envelope nao funcionar apagar aqui
 Ponto envelopeSD, envelopeSE, envelopeID, envelopeIE; 
 
 bool desenhaEixos = true;
