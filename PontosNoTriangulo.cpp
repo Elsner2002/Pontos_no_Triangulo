@@ -47,10 +47,13 @@ double AccumDeltaT=0;
 // Variaveis que controlam o triangulo do campo de visao
 Poligono PontosDoCenario, CampoDeVisao, TrianguloBase, eDentro, dentroEnvelope;
 float AnguloDoCampoDeVisao=0.0;
+float envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
 
 // Limites logicos da area de desenho
 Ponto Min, Max, Tamanho, Meio;
 Ponto PosicaoDoCampoDeVisao, PontoClicado;
+//se desenhar envelope nao funcionar apagar aqui git commit -m "feat(PontosNoTriangulo): draw Bound Box"
+Ponto envelopeSD, envelopeSE, envelopeID, envelopeIE; 
 
 bool desenhaEixos = true;
 bool FoiClicado = false;
@@ -276,9 +279,13 @@ void display( void )
 		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
 	} else if (envelope==true){
 		criaEnvelope();
+        //se desenhar envelope nao funcionar apagar aqui
+        DesenhaLinha(envelopeSD,envelopeSE);
+        DesenhaLinha(envelopeID,envelopeIE);
+        DesenhaLinha(envelopeSD,envelopeID);
+        DesenhaLinha(envelopeSE,envelopeIE);
 		pintaPoligono(PontosDoCenario, 1.0, 0.0, 0.0);
 		pontosEnvelope(PontosDoCenario);
-		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
 		pintaPoligono(dentroEnvelope, 1.0, 1.0, 0.0);
 		forcaBruta(dentroEnvelope);
 		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
@@ -422,8 +429,6 @@ void forcaBruta(Poligono pontos){
 	}
 }
 
-int envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
-
 void criaEnvelope(){
 	envelopeMaiorX=TrianguloBase.getVertice(0).x;
 	envelopeMenorX=TrianguloBase.getVertice(0).x;
@@ -443,10 +448,11 @@ void criaEnvelope(){
 			envelopeMenorY=TrianguloBase.getVertice(i).y;
 		}
 	}
-}
-
-void desenhaEnvelope() {
-
+    //se desenhar envelope nao funcionar apagar aqui
+    envelopeSD=Ponto(envelopeMaiorX,envelopeMaiorY,0);
+    envelopeSE=Ponto(envelopeMenorX,envelopeMaiorY,0);
+    envelopeID=Ponto(envelopeMaiorX,envelopeMenorY,0);
+    envelopeIE=Ponto(envelopeMenorX,envelopeMenorY,0);
 }
 
 void pontosEnvelope(Poligono pontos){
