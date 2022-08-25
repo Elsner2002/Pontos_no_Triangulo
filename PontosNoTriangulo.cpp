@@ -156,13 +156,13 @@ Poligono testaColisaoPorForcaBruta(Poligono pontosDoCenario){
 
 	for (std::size_t i = 0; i < pontosDoCenario.getNVertices(); i++) {
 		ProdVetorial(
-			pontosDoCenario.getVertice(i), trianguloBase.getVertice(0), p1
+			pontosDoCenario.getVertice(i), campoDeVisao.getVertice(0), p1
 		);
 		ProdVetorial(
-			pontosDoCenario.getVertice(i), trianguloBase.getVertice(1), p2
+			pontosDoCenario.getVertice(i), campoDeVisao.getVertice(1), p2
 		);
 		ProdVetorial(
-			pontosDoCenario.getVertice(i), trianguloBase.getVertice(2), p3
+			pontosDoCenario.getVertice(i), campoDeVisao.getVertice(2), p3
 		);
 
 		if(p1.z < 0 && p2.z < 0 && p3.z < 0){
