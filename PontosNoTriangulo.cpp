@@ -120,7 +120,7 @@ void display()
 	glColor3f(1,0,0);
 	campoDeVisao.desenhaPoligono();
 
-	Poligono dentro;
+	static Poligono dentro;
 
 	switch (testeDeColisao) {
 		case FORCA_BRUTA:
@@ -153,20 +153,34 @@ void display()
 	glutSwapBuffers();
 }
 
-Poligono testaColisaoPorForcaBruta(Poligono pontos){
+Poligono testaColisaoPorForcaBruta(Poligono pontos)
+{
 	Poligono pontosDentroDoTriangulo;
-	Ponto p;
+
+	Ponto verticesDoTriangulo[] = {
+		campoDeVisao.getVertice(0), campoDeVisao.getVertice(1),
+		campoDeVisao.getVertice(2)
+	};
+
+	Ponto arestasDoTriangulo[] = {
+		campoDeVisao.getVertice(0) - campoDeVisao.getVertice(1),
+		campoDeVisao.getVertice(1) - campoDeVisao.getVertice(2),
+		campoDeVisao.getVertice(2) - campoDeVisao.getVertice(0),
+	};
+
+	Ponto vp, prodVetorial;
 
 	for (size_t i = 0; i < pontos.getNVertices(); i++) {
-		for (size_t j = 0; j < campoDeVisao.getNVertices(); j++) {
-			ProdVetorial(pontos.getVertice(i), campoDeVisao.getVertice(j), p);
+		for (size_t j = 0; j < 3; j++) {
+			vp = pontos.getVertice(i) - verticesDoTriangulo[j];
+			ProdVetorial(vp, arestasDoTriangulo[j], prodVetorial);
 
-			if (p.z > 0) {
+			if (prodVetorial.z > 0) {
 				break;
 			}
 		}
 
-		if (p.z < 0) {
+		if (prodVetorial.z < 0) {
 			pontosDentroDoTriangulo.insereVertice(pontos.getVertice(i));
 		}
 	}
@@ -174,7 +188,8 @@ Poligono testaColisaoPorForcaBruta(Poligono pontos){
 	return pontosDentroDoTriangulo;
 }
 
-Poligono testaColisaoPorEnvelope(Poligono pontos){
+Poligono testaColisaoPorEnvelope(Poligono pontos)
+{
 	Poligono pontosDentroDoEnvelope;
 
 	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
