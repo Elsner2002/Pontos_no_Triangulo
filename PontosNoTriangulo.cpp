@@ -194,23 +194,24 @@ Poligono testaColisaoPorEnvelope(Poligono pontosDoCenario){
 	return pontosDentroDoEnvelope;
 }
 
-void criaEnvelope(){
-	envelopeMaiorX=trianguloBase.getVertice(0).x;
-	envelopeMenorX=trianguloBase.getVertice(0).x;
-	envelopeMaiorY=trianguloBase.getVertice(0).y;
-	envelopeMenorY=trianguloBase.getVertice(0).y;
-	for(int i=1; i<3;i++){
-		if(trianguloBase.getVertice(i).x>envelopeMaiorX){
-			envelopeMaiorX=trianguloBase.getVertice(i).x;
+void criaEnvelope() {
+	envelopeMaiorX = trianguloBase.getVertice(0).x;
+	envelopeMenorX = trianguloBase.getVertice(0).x;
+	envelopeMaiorY = trianguloBase.getVertice(0).y;
+	envelopeMenorY = trianguloBase.getVertice(0).y;
+
+	for (int i = 1; i < campoDeVisao.getNVertices(); i++) {
+		if (trianguloBase.getVertice(i).x > envelopeMaiorX) {
+			envelopeMaiorX = campoDeVisao.getVertice(i).x;
 		}
-		if(trianguloBase.getVertice(i).x<envelopeMenorX){
-			envelopeMenorX=trianguloBase.getVertice(i).x;
+		if (trianguloBase.getVertice(i).x < envelopeMenorX) {
+			envelopeMenorX = campoDeVisao.getVertice(i).x;
 		}
-		if(trianguloBase.getVertice(i).y>envelopeMaiorY){
-			envelopeMaiorY=trianguloBase.getVertice(i).y;
+		if (trianguloBase.getVertice(i).y > envelopeMaiorY) {
+			envelopeMaiorY = campoDeVisao.getVertice(i).y;
 		}
-		if(trianguloBase.getVertice(i).y<envelopeMenorY){
-			envelopeMenorY=trianguloBase.getVertice(i).y;
+		if (trianguloBase.getVertice(i).y < envelopeMenorY) {
+			envelopeMenorY = campoDeVisao.getVertice(i).y;
 		}
 	}
 }
