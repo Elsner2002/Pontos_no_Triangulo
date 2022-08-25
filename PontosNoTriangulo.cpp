@@ -38,6 +38,7 @@ double tempoTotal=0;
 
 Poligono pontosDoCenario;
 Poligono campoDeVisao;
+Poligono envelope;
 Poligono trianguloBase;
 Ponto posicaoDoCampoDeVisao;
 float anguloDoCampoDeVisao = 0.0;
@@ -60,7 +61,7 @@ void mouse(int button, int state, int x, int y);
 void redimensiona( int w, int h );
 Poligono testaColisaoPorForcaBruta(Poligono pontos);
 Poligono testaColisaoPorEnvelope(Poligono pontos);
-Poligono criaEnvelope();
+void posicionaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
 void pintaPoligono(
@@ -119,14 +120,13 @@ void display()
 	glColor3f(1,0,0);
 	campoDeVisao.desenhaPoligono();
 
-	Poligono envelope, dentro;
+	Poligono dentro;
 
 	switch (testeDeColisao) {
 		case FORCA_BRUTA:
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
 			break;
 		case ENVELOPE:
-			envelope = criaEnvelope();
 			glLineWidth(1);
 			glColor3f(1,1,0);
 			envelope.desenhaPoligono();
@@ -191,7 +191,13 @@ Poligono testaColisaoPorEnvelope(Poligono pontos){
 	return pontosDentroDoEnvelope;
 }
 
-Poligono criaEnvelope() {
+void criaEnvelope() {
+	for (size_t i = 0; i < 4; i++) {
+		envelope.insereVertice(Ponto(0, 0, 0));
+	}
+}
+
+void posicionaEnvelope() {
 	envelopeMaiorX = campoDeVisao.getVertice(0).x;
 	envelopeMenorX = campoDeVisao.getVertice(0).x;
 	envelopeMaiorY = campoDeVisao.getVertice(0).y;
@@ -215,12 +221,10 @@ Poligono criaEnvelope() {
 		}
 	}
 
-	Poligono envelope;
-	envelope.insereVertice(Ponto(envelopeMenorX, envelopeMaiorY));
-	envelope.insereVertice(Ponto(envelopeMaiorX, envelopeMaiorY));
-	envelope.insereVertice(Ponto(envelopeMaiorX, envelopeMenorY));
-	envelope.insereVertice(Ponto(envelopeMenorX, envelopeMenorY));
-	return envelope;
+	envelope.alteraVertice(0, Ponto(envelopeMenorX, envelopeMaiorY));
+	envelope.alteraVertice(1, Ponto(envelopeMaiorX, envelopeMaiorY));
+	envelope.alteraVertice(2, Ponto(envelopeMaiorX, envelopeMenorY));
+	envelope.alteraVertice(3, Ponto(envelopeMenorX, envelopeMenorY));
 }
 
 void pintaPoligono(
@@ -345,6 +349,8 @@ void init()
 	anguloDoCampoDeVisao = 0;
 	CriaTrianguloDoCampoDeVisao();
 	PosicionaTrianguloDoCampoDeVisao();
+	criaEnvelope();
+	posicionaEnvelope();
 }
 
 void desenhaLinha(Ponto P1, Ponto P2)
@@ -435,6 +441,7 @@ void flechas(int flechas_, int x, int y)
 	}
 
 	PosicionaTrianguloDoCampoDeVisao();
+	posicionaEnvelope();
 	glutPostRedisplay();
 }
 
