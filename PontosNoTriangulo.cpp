@@ -25,7 +25,7 @@ using namespace std;
 #include "Poligono.h"
 #include "Temporizador.h"
 
-enum testeDeColisao {
+enum TesteDeColisao {
 	FORCA_BRUTA,
 	ENVELOPE,
 	QUADTREE
@@ -39,22 +39,30 @@ double tempoTotal=0;
 Poligono pontosDoCenario;
 Poligono campoDeVisao;
 Poligono trianguloBase;
-Ponto PosicaoDoCampoDeVisao;
+Ponto posicaoDoCampoDeVisao;
 float anguloDoCampoDeVisao = 0.0;
 float envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
 
 Ponto desenhoMin, desenhoMax;
 Ponto tamanhoDaJanela, meioDaJanela;
-Ponto PontoClicado;
-bool FoiClicado = false;
+Ponto pontoClicado;
+bool foiClicado = false;
 
-bool desenhaEixos = true;
-testeDeColisao testeDeColisao = FORCA_BRUTA;
+bool eixosDesenhados = true;
+TesteDeColisao testeDeColisao = FORCA_BRUTA;
 
-void testaColisaoPorForcaBruta(Poligono pontos);
+void display();
+void animate();
+void init();
+void teclado(unsigned char key, int x, int y);
+void flechas(int flechas_, int x, int y);
+void mouse(int button, int state, int x, int y);
+void redimensiona( int w, int h );
+Poligono testaColisaoPorForcaBruta(Poligono pontosDoCenario);
+Poligono testaColisaoPorEnvelope(Poligono pontosDoCenario);
 void criaEnvelope();
 void desenhaEnvelope();
-void testaColisaoPorEnvelope(Poligono pontos);
+void desenhaEixos();
 void pintaPoligono(
 	Poligono poligono, GLfloat red, GLfloat green, GLfloat blue
 );
@@ -74,13 +82,13 @@ int main (int argc, char** argv)
 	glutIdleFunc(animate);
 	// Define a função que será chamada automaticamente
 	// quando for necessário redimensionar a janela.
-	glutReshapeFunc(reshape);
+	glutReshapeFunc(redimensiona);
 	// Define a função que será chamada automaticamente
 	// sempre que o usuário pressionar uma tecla comum.
-	glutKeyboardFunc(keyboard);
+	glutKeyboardFunc(teclado);
 	// Define a função que será chamada automaticamente
 	// sempre que o usuário pressionar uma tecla especial.
-	glutSpecialFunc(arrow_keys);
+	glutSpecialFunc(flechas);
 	glutMouseFunc(mouse);
 
 	// Inicia o tratamento dos eventos.
@@ -97,11 +105,11 @@ void display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (desenhaEixos)
+	if (eixosDesenhados)
 	{
 		glLineWidth(1);
 		glColor3f(1,1,1);
-		DesenhaEixos();
+		desenhaEixos();
 	}
 
 	glColor3f(1,1,0);
@@ -111,66 +119,79 @@ void display()
 	glColor3f(1,0,0);
 	campoDeVisao.desenhaPoligono();
 
-	if (fb==true){
-		pintaPoligono(pontosDoCenario, 1.0, 0.0, 0.0);
-		testaColisaoPorForcaBruta(pontosDoCenario);
-		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
-		//printa numero de pontos dentro do triangulo
-		cout << "Triangulo Base: " << endl;
-		cout << "Dentro do trianulo tem " << eDentro.getNVertices() << " pontos." << endl;
-	} else if (envelope==true){
-		criaEnvelope();
-        //se desenhar envelope nao funcionar apagar aqui
-        DesenhaLinha(envelopeSD,envelopeSE);
-        DesenhaLinha(envelopeID,envelopeIE);
-        DesenhaLinha(envelopeSD,envelopeID);
-        DesenhaLinha(envelopeSE,envelopeIE);
-		pintaPoligono(pontosDoCenario, 1.0, 0.0, 0.0);
-		testaColisaoPorEnvelope(pontosDoCenario);
-		pintaPoligono(dentroEnvelope, 1.0, 1.0, 0.0);
-		forcaBruta(dentroEnvelope);
-		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
-		//printa numero de pontos dentro do triangulo
-		cout << "Dentro do trianulo tem " << eDentro.getNVertices() << " pontos." << endl;
+	Poligono dentro;
+
+	switch (testeDeColisao) {
+		case FORCA_BRUTA:
+			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
+			break;
+		case ENVELOPE:
+			criaEnvelope();
+			dentro = testaColisaoPorEnvelope(pontosDoCenario);
+			pintaPoligono(dentro, 1.0, 1.0, 0.0);
+			cout << "Dentro do envelope há " << dentro.getNVertices()
+				<< " pontos\n";
+			dentro = testaColisaoPorForcaBruta(dentro);
+			break;
+		case QUADTREE:
+			break;
 	}
 
-	if (FoiClicado)
+	pintaPoligono(dentro, 0.0, 1.0, 0.0);
+	cout << "Dentro do triângulo há " << dentro.getNVertices()
+		<< " pontos\n";
+
+	if (foiClicado)
 	{
-		PontoClicado.imprime("- Ponto no universo: ", "\n");
-		FoiClicado = false;
+		pontoClicado.imprime("- Ponto no universo: ", "\n");
+		foiClicado = false;
 	}
 
 	glutSwapBuffers();
 }
 
-void testaColisaoPorForcaBruta(Poligono pontos){
-	eDentro.clear();
+Poligono testaColisaoPorForcaBruta(Poligono pontosDoCenario){
+	Poligono pontosDentroDoTriangulo;
 	Ponto p1, p2, p3;
 
-	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
-		ProdVetorial(pontos.getVertice(i), trianguloBase.getVertice(0), p1);
-		ProdVetorial(pontos.getVertice(i), trianguloBase.getVertice(1), p2);
-		ProdVetorial(pontos.getVertice(i), trianguloBase.getVertice(2), p3);
+	for (std::size_t i = 0; i < pontosDoCenario.getNVertices(); i++) {
+		ProdVetorial(
+			pontosDoCenario.getVertice(i), trianguloBase.getVertice(0), p1
+		);
+		ProdVetorial(
+			pontosDoCenario.getVertice(i), trianguloBase.getVertice(1), p2
+		);
+		ProdVetorial(
+			pontosDoCenario.getVertice(i), trianguloBase.getVertice(2), p3
+		);
 
 		if(p1.z < 0 && p2.z < 0 && p3.z < 0){
-			eDentro.insereVertice(pontos.getVertice(i));
+			pontosDentroDoTriangulo.insereVertice(
+				pontosDoCenario.getVertice(i)
+			);
 		}
 	}
+
+	return pontosDentroDoTriangulo;
 }
 
-void testaColisaoPorEnvelope(Poligono pontos){
-	dentroEnvelope.clear();
+Poligono testaColisaoPorEnvelope(Poligono pontosDoCenario){
+	Poligono pontosDentroDoEnvelope;
 
-	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
+	for (std::size_t i = 0; i < pontosDoCenario.getNVertices(); i++) {
 		if (
-			pontos.getVertice(i).x > envelopeMenorX &&
-			pontos.getVertice(i).x < envelopeMaiorX &&
-			pontos.getVertice(i).y > envelopeMenorY &&
-			pontos.getVertice(i).y < envelopeMaiorY
+			pontosDoCenario.getVertice(i).x > envelopeMenorX &&
+			pontosDoCenario.getVertice(i).x < envelopeMaiorX &&
+			pontosDoCenario.getVertice(i).y > envelopeMenorY &&
+			pontosDoCenario.getVertice(i).y < envelopeMaiorY
 		){
-			dentroEnvelope.insereVertice(pontos.getVertice(i));
+			pontosDentroDoEnvelope.insereVertice(
+				pontosDoCenario.getVertice(i)
+			);
 		}
 	}
+
+	return pontosDentroDoEnvelope;
 }
 
 void criaEnvelope(){
@@ -240,7 +261,7 @@ void PosicionaTrianguloDoCampoDeVisao()
 	{
 		temp = trianguloBase.getVertice(i);
 		temp.rotacionaZ(anguloDoCampoDeVisao);
-		campoDeVisao.alteraVertice(i, PosicaoDoCampoDeVisao + temp*tamanho);
+		campoDeVisao.alteraVertice(i, posicaoDoCampoDeVisao + temp*tamanho);
 	}
 }
 
@@ -271,7 +292,7 @@ void AvancaCampoDeVisao(float distancia)
 {
 	Ponto vetor = Ponto(1, 0, 0);
 	vetor.rotacionaZ(anguloDoCampoDeVisao);
-	PosicaoDoCampoDeVisao = PosicaoDoCampoDeVisao + vetor * distancia;
+	posicaoDoCampoDeVisao = posicaoDoCampoDeVisao + vetor * distancia;
 }
 
 void animate()
@@ -312,7 +333,7 @@ void init()
 	pontosDoCenario.obtemLimites(desenhoMin, desenhoMax);
 	meioDaJanela = (desenhoMax + desenhoMin) * 0.5;
 	tamanhoDaJanela = (desenhoMax - desenhoMin);
-	PosicaoDoCampoDeVisao = meioDaJanela;
+	posicaoDoCampoDeVisao = meioDaJanela;
 	anguloDoCampoDeVisao = 0;
 	CriaTrianguloDoCampoDeVisao();
 	PosicionaTrianguloDoCampoDeVisao();
@@ -360,7 +381,7 @@ void contaTempo(double tempo)
 	}
 }
 
-void keyboard(unsigned char key, int x, int y)
+void teclado(unsigned char key, int x, int y)
 {
 	switch (key) {
 		// Tecla ESC
@@ -377,7 +398,7 @@ void keyboard(unsigned char key, int x, int y)
 			testeDeColisao = ENVELOPE;
 			break;
 		case ' ':
-			desenhaEixos ^= true;
+			eixosDesenhados ^= true;
 			break;
 		default:
 			break;
@@ -433,8 +454,8 @@ void mouse(int button, int state, int x, int y)
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
 	glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &wz);
 	gluUnProject(wx, wy, wz, modelview, projection, viewport, &ox, &oy, &oz);
-	PontoClicado = Ponto(ox, oy, oz);
-	FoiClicado = true;
+	pontoClicado = Ponto(ox, oy, oz);
+	foiClicado = true;
 }
 
 /**
