@@ -277,6 +277,8 @@ void display( void )
 		pintaPoligono(PontosDoCenario, 1.0, 0.0, 0.0);
 		forcaBruta(PontosDoCenario);
 		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
+		cout << "Dentro do trianulo tem " << eDentro.getNVertices() << " pontos." << endl;
+		cout << "Triangulo Base: " << endl;
 	} else if (envelope==true){
 		criaEnvelope();
         //se desenhar envelope nao funcionar apagar aqui
@@ -289,6 +291,7 @@ void display( void )
 		pintaPoligono(dentroEnvelope, 1.0, 1.0, 0.0);
 		forcaBruta(dentroEnvelope);
 		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
+		cout << "Dentro do trianulo tem " << eDentro.getNVertices() << " pontos." << endl;
 	}
 
 	if (FoiClicado)
