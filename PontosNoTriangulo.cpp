@@ -39,6 +39,7 @@ double tempoTotal=0;
 Poligono pontosDoCenario;
 Poligono campoDeVisao;
 Poligono trianguloBase;
+Poligono envelope;
 Ponto posicaoDoCampoDeVisao;
 float anguloDoCampoDeVisao = 0.0;
 float envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
@@ -58,8 +59,8 @@ void teclado(unsigned char key, int x, int y);
 void flechas(int flechas_, int x, int y);
 void mouse(int button, int state, int x, int y);
 void redimensiona( int w, int h );
-Poligono testaColisaoPorForcaBruta(Poligono pontosDoCenario);
-Poligono testaColisaoPorEnvelope(Poligono pontosDoCenario);
+Poligono testaColisaoPorForcaBruta(Poligono pontos);
+Poligono testaColisaoPorEnvelope(Poligono pontos);
 void criaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
@@ -127,6 +128,9 @@ void display()
 			break;
 		case ENVELOPE:
 			criaEnvelope();
+			glLineWidth(1);
+			glColor3f(1,1,1);
+			envelope.desenhaPoligono();
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
 			pintaPoligono(dentro, 1.0, 1.0, 0.0);
 			cout << "Dentro do envelope há " << dentro.getNVertices()
@@ -150,44 +154,38 @@ void display()
 	glutSwapBuffers();
 }
 
-Poligono testaColisaoPorForcaBruta(Poligono pontosDoCenario){
+Poligono testaColisaoPorForcaBruta(Poligono pontos){
 	Poligono pontosDentroDoTriangulo;
-	Ponto p1, p2, p3;
+	Ponto p;
 
-	for (std::size_t i = 0; i < pontosDoCenario.getNVertices(); i++) {
-		ProdVetorial(
-			pontosDoCenario.getVertice(i), campoDeVisao.getVertice(0), p1
-		);
-		ProdVetorial(
-			pontosDoCenario.getVertice(i), campoDeVisao.getVertice(1), p2
-		);
-		ProdVetorial(
-			pontosDoCenario.getVertice(i), campoDeVisao.getVertice(2), p3
-		);
+	for (size_t i = 0; i < pontos.getNVertices(); i++) {
+		for (size_t j = 0; j < campoDeVisao.getNVertices(); j++) {
+			ProdVetorial(pontos.getVertice(i), campoDeVisao.getVertice(j), p);
 
-		if(p1.z < 0 && p2.z < 0 && p3.z < 0){
-			pontosDentroDoTriangulo.insereVertice(
-				pontosDoCenario.getVertice(i)
-			);
+			if (p.z > 0) {
+				break;
+			}
+		}
+
+		if (p.z < 0) {
+			pontosDentroDoTriangulo.insereVertice(pontos.getVertice(i));
 		}
 	}
 
 	return pontosDentroDoTriangulo;
 }
 
-Poligono testaColisaoPorEnvelope(Poligono pontosDoCenario){
+Poligono testaColisaoPorEnvelope(Poligono pontos){
 	Poligono pontosDentroDoEnvelope;
 
-	for (std::size_t i = 0; i < pontosDoCenario.getNVertices(); i++) {
+	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
 		if (
-			pontosDoCenario.getVertice(i).x > envelopeMenorX &&
-			pontosDoCenario.getVertice(i).x < envelopeMaiorX &&
-			pontosDoCenario.getVertice(i).y > envelopeMenorY &&
-			pontosDoCenario.getVertice(i).y < envelopeMaiorY
+			pontos.getVertice(i).x > envelopeMenorX &&
+			pontos.getVertice(i).x < envelopeMaiorX &&
+			pontos.getVertice(i).y > envelopeMenorY &&
+			pontos.getVertice(i).y < envelopeMaiorY
 		){
-			pontosDentroDoEnvelope.insereVertice(
-				pontosDoCenario.getVertice(i)
-			);
+			pontosDentroDoEnvelope.insereVertice(pontos.getVertice(i));
 		}
 	}
 
@@ -195,25 +193,31 @@ Poligono testaColisaoPorEnvelope(Poligono pontosDoCenario){
 }
 
 void criaEnvelope() {
-	envelopeMaiorX = trianguloBase.getVertice(0).x;
-	envelopeMenorX = trianguloBase.getVertice(0).x;
-	envelopeMaiorY = trianguloBase.getVertice(0).y;
-	envelopeMenorY = trianguloBase.getVertice(0).y;
+	envelopeMaiorX = campoDeVisao.getVertice(0).x;
+	envelopeMenorX = campoDeVisao.getVertice(0).x;
+	envelopeMaiorY = campoDeVisao.getVertice(0).y;
+	envelopeMenorY = campoDeVisao.getVertice(0).y;
 
 	for (int i = 1; i < campoDeVisao.getNVertices(); i++) {
-		if (trianguloBase.getVertice(i).x > envelopeMaiorX) {
+		if (campoDeVisao.getVertice(i).x > envelopeMaiorX) {
 			envelopeMaiorX = campoDeVisao.getVertice(i).x;
 		}
-		if (trianguloBase.getVertice(i).x < envelopeMenorX) {
+
+		if (campoDeVisao.getVertice(i).x < envelopeMenorX) {
 			envelopeMenorX = campoDeVisao.getVertice(i).x;
 		}
-		if (trianguloBase.getVertice(i).y > envelopeMaiorY) {
+
+		if (campoDeVisao.getVertice(i).y > envelopeMaiorY) {
 			envelopeMaiorY = campoDeVisao.getVertice(i).y;
 		}
-		if (trianguloBase.getVertice(i).y < envelopeMenorY) {
+
+		if (campoDeVisao.getVertice(i).y < envelopeMenorY) {
 			envelopeMenorY = campoDeVisao.getVertice(i).y;
 		}
 	}
+
+	envelope.insereVertice(Ponto(envelopeMaiorX, envelopeMaiorY));
+	envelope.insereVertice(Ponto(envelopeMenorX, envelopeMenorY));
 }
 
 void pintaPoligono(
@@ -329,7 +333,7 @@ void init()
 
 	// Gera ou Carrega os pontos do cenario.
 	// Note que o "aspect ratio" dos pontos deve ser o mesmo da janela.
-	GeraPontos(1000, Ponto(0,0), Ponto(500,500));
+	GeraPontos(100, Ponto(0,0), Ponto(500,500));
 
 	pontosDoCenario.obtemLimites(desenhoMin, desenhoMax);
 	meioDaJanela = (desenhoMax + desenhoMin) * 0.5;
