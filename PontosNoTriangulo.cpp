@@ -57,7 +57,7 @@ TesteDeColisao testeDeColisao = NADA;
 
 void display();
 void animate();
-void init();
+void init(bool lerArquivo, char *nomeDoArquivo);
 void teclado(unsigned char key, int x, int y);
 void flechas(int flechas_, int x, int y);
 void mouse(int button, int state, int x, int y);
@@ -76,7 +76,12 @@ int main (int argc, char** argv)
 	glutInitWindowPosition(0,0);
 	glutInitWindowSize(500, 500);
 	glutCreateWindow("Pontos no Triângulo");
-	init();
+
+	if (argc > 1) {
+		init(true, argv[1]);
+	} else {
+		init(false, NULL);
+	}
 
 	// Define a função que será chamada automaticamente
 	// quando for necessário redesenhar a janela.
@@ -356,14 +361,18 @@ void animate()
 /**
  * Inicializa as variáveis de estado da aplicação.
  */
-void init()
+void init(bool lerArquivo, char *nomeDoArquivo)
 {
 	// Define a cor do fundo da tela.
 	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 
-	// Gera ou Carrega os pontos do cenario.
-	// Note que o "aspect ratio" dos pontos deve ser o mesmo da janela.
-	GeraPontos(1000, Ponto(0,0), Ponto(500,500));
+	if (lerArquivo) {
+		pontosDoCenario.LePoligono(nomeDoArquivo);
+	} else {
+		// Gera ou Carrega os pontos do cenario.
+		// Note que o "aspect ratio" dos pontos deve ser o mesmo da janela.
+		GeraPontos(1000, Ponto(0,0), Ponto(500,500));
+	}
 
 	pontosDoCenario.obtemLimites(desenhoMin, desenhoMax);
 	meioDaJanela = (desenhoMax + desenhoMin) * 0.5;
