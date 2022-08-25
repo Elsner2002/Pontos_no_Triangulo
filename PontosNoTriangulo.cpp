@@ -1,3 +1,4 @@
+#include <GL/gl.h>
 #include <cstddef>
 #include <iostream>
 #include <cmath>
@@ -21,6 +22,7 @@
 
 using namespace std;
 
+#include "ListaDeCoresRGB.h"
 #include "Ponto.h"
 #include "Poligono.h"
 #include "Temporizador.h"
@@ -64,9 +66,7 @@ Poligono testaColisaoPorEnvelope(Poligono pontos);
 void posicionaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
-void pintaPoligono(
-	Poligono poligono, GLfloat red, GLfloat green, GLfloat blue
-);
+void desenhaVerticesColoridos(Poligono poligono, int cor);
 
 int main (int argc, char** argv)
 {
@@ -113,8 +113,8 @@ void display()
 		desenhaEixos();
 	}
 
-	glColor3f(1,1,0);
-	pontosDoCenario.desenhaVertices();
+	glPointSize(3);
+	desenhaVerticesColoridos(pontosDoCenario, Firebrick);
 
 	glLineWidth(3);
 	glColor3f(1,0,0);
@@ -131,7 +131,7 @@ void display()
 			glColor3f(1,1,0);
 			envelope.desenhaPoligono();
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
-			pintaPoligono(dentro, 1.0, 1.0, 0.0);
+			desenhaVerticesColoridos(dentro, Gold);
 			cout << "Dentro do envelope há " << dentro.getNVertices()
 				<< " pontos\n";
 			dentro = testaColisaoPorForcaBruta(dentro);
@@ -140,7 +140,7 @@ void display()
 			break;
 	}
 
-	pintaPoligono(dentro, 0.0, 1.0, 0.0);
+	desenhaVerticesColoridos(dentro, ForestGreen);
 	cout << "Dentro do triângulo há " << dentro.getNVertices()
 		<< " pontos\n";
 
@@ -227,14 +227,15 @@ void posicionaEnvelope() {
 	envelope.alteraVertice(3, Ponto(envelopeMenorX, envelopeMenorY));
 }
 
-void pintaPoligono(
-	Poligono poligono, GLfloat red, GLfloat green, GLfloat blue
-) {
+void desenhaVerticesColoridos(Poligono poligono, int cor) {
 	for (std::size_t i = 0; i < poligono.getNVertices(); i++) {
 		Ponto vertice = poligono.getVertice(i);
-		glColor3f(red, green, blue);
+		glBegin(GL_POINTS);
+		defineCor(cor);
 		glVertex3f(vertice.x, vertice.y, vertice.z);
 	}
+
+	glEnd();
 }
 
 /**
