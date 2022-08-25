@@ -28,6 +28,7 @@ using namespace std;
 #include "Temporizador.h"
 
 enum TesteDeColisao {
+	NADA,
 	FORCA_BRUTA,
 	ENVELOPE,
 	QUADTREE
@@ -52,7 +53,7 @@ Ponto pontoClicado;
 bool foiClicado = false;
 
 bool eixosDesenhados = true;
-TesteDeColisao testeDeColisao = FORCA_BRUTA;
+TesteDeColisao testeDeColisao = NADA;
 
 void display();
 void animate();
@@ -113,7 +114,7 @@ void display()
 		desenhaEixos();
 	}
 
-	glPointSize(3);
+	glPointSize(2);
 	desenhaVerticesColoridos(pontosDoCenario, Firebrick);
 
 	glLineWidth(3);
@@ -123,6 +124,9 @@ void display()
 	static Poligono dentro;
 
 	switch (testeDeColisao) {
+		case NADA:
+		    desenhaVerticesColoridos(pontosDoCenario, Quartz);
+			break;
 		case FORCA_BRUTA:
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
 			break;
@@ -140,9 +144,12 @@ void display()
 			break;
 	}
 
-	desenhaVerticesColoridos(dentro, ForestGreen);
-	cout << "Dentro do triângulo há " << dentro.getNVertices()
-		<< " pontos\n";
+	if (testeDeColisao != NADA) {
+		desenhaVerticesColoridos(dentro, ForestGreen);
+		cout << "Dentro do triângulo há " << dentro.getNVertices()
+			<< " pontos\n";
+	}
+
 
 	if (foiClicado)
 	{
@@ -356,7 +363,7 @@ void init()
 
 	// Gera ou Carrega os pontos do cenario.
 	// Note que o "aspect ratio" dos pontos deve ser o mesmo da janela.
-	GeraPontos(100, Ponto(0,0), Ponto(500,500));
+	GeraPontos(1000, Ponto(0,0), Ponto(500,500));
 
 	pontosDoCenario.obtemLimites(desenhoMin, desenhoMax);
 	meioDaJanela = (desenhoMax + desenhoMin) * 0.5;
@@ -422,10 +429,25 @@ void teclado(unsigned char key, int x, int y)
 			contaTempo(3);
 			break;
 		case 'f':
-			testeDeColisao = FORCA_BRUTA;
+			if (testeDeColisao == FORCA_BRUTA) {
+				testeDeColisao = NADA;
+			} else {
+				testeDeColisao = FORCA_BRUTA;
+			}
 			break;
 		case 'e':
-			testeDeColisao = ENVELOPE;
+			if (testeDeColisao == ENVELOPE) {
+				testeDeColisao = NADA;
+			} else {
+				testeDeColisao = ENVELOPE;
+			}
+			break;
+		case 'q':
+			if (testeDeColisao == QUADTREE) {
+				testeDeColisao = NADA;
+			} else {
+				testeDeColisao = QUADTREE;
+			}
 			break;
 		case ' ':
 			eixosDesenhados ^= true;
