@@ -138,8 +138,3 @@ void Poligono::imprimeVertices()
     for (int i=0; i<Vertices.size(); i++)
         Vertices[i].imprime("", "\n");
 }
-
-void Poligono::clear()
-{
-	Vertices.clear();
-}
