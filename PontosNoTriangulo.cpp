@@ -277,6 +277,7 @@ void display( void )
 		pintaPoligono(PontosDoCenario, 1.0, 0.0, 0.0);
 		forcaBruta(PontosDoCenario);
 		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
+		//printa numero de pontos dentro do triangulo
 		cout << "Dentro do trianulo tem " << eDentro.getNVertices() << " pontos." << endl;
 		cout << "Triangulo Base: " << endl;
 	} else if (envelope==true){
@@ -291,6 +292,7 @@ void display( void )
 		pintaPoligono(dentroEnvelope, 1.0, 1.0, 0.0);
 		forcaBruta(dentroEnvelope);
 		pintaPoligono(eDentro, 0.0, 1.0, 0.0);
+		//printa numero de pontos dentro do triangulo
 		cout << "Dentro do trianulo tem " << eDentro.getNVertices() << " pontos." << endl;
 	}
 
