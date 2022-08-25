@@ -39,7 +39,6 @@ double tempoTotal=0;
 Poligono pontosDoCenario;
 Poligono campoDeVisao;
 Poligono trianguloBase;
-Poligono envelope;
 Ponto posicaoDoCampoDeVisao;
 float anguloDoCampoDeVisao = 0.0;
 float envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
@@ -61,7 +60,7 @@ void mouse(int button, int state, int x, int y);
 void redimensiona( int w, int h );
 Poligono testaColisaoPorForcaBruta(Poligono pontos);
 Poligono testaColisaoPorEnvelope(Poligono pontos);
-void criaEnvelope();
+Poligono criaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
 void pintaPoligono(
@@ -120,16 +119,16 @@ void display()
 	glColor3f(1,0,0);
 	campoDeVisao.desenhaPoligono();
 
-	Poligono dentro;
+	Poligono envelope, dentro;
 
 	switch (testeDeColisao) {
 		case FORCA_BRUTA:
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
 			break;
 		case ENVELOPE:
-			criaEnvelope();
+			envelope = criaEnvelope();
 			glLineWidth(1);
-			glColor3f(1,1,1);
+			glColor3f(1,1,0);
 			envelope.desenhaPoligono();
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
 			pintaPoligono(dentro, 1.0, 1.0, 0.0);
@@ -192,7 +191,7 @@ Poligono testaColisaoPorEnvelope(Poligono pontos){
 	return pontosDentroDoEnvelope;
 }
 
-void criaEnvelope() {
+Poligono criaEnvelope() {
 	envelopeMaiorX = campoDeVisao.getVertice(0).x;
 	envelopeMenorX = campoDeVisao.getVertice(0).x;
 	envelopeMaiorY = campoDeVisao.getVertice(0).y;
@@ -216,8 +215,12 @@ void criaEnvelope() {
 		}
 	}
 
+	Poligono envelope;
+	envelope.insereVertice(Ponto(envelopeMenorX, envelopeMaiorY));
 	envelope.insereVertice(Ponto(envelopeMaiorX, envelopeMaiorY));
+	envelope.insereVertice(Ponto(envelopeMaiorX, envelopeMenorY));
 	envelope.insereVertice(Ponto(envelopeMenorX, envelopeMenorY));
+	return envelope;
 }
 
 void pintaPoligono(
