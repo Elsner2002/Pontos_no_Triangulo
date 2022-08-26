@@ -142,6 +142,8 @@ void display()
 			break;
 		case FORCA_BRUTA:
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
+			cout << "Fora do triângulo há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
+				<< " pontos\n";
 			break;
 		case ENVELOPE:
 			glLineWidth(1);
@@ -149,11 +151,18 @@ void display()
 			envelope.desenhaPoligono();
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
 			desenhaVerticesColoridos(dentro, Gold);
+			cout << "Fora do envelope há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
+				<< " pontos\n";
 			cout << "Dentro do envelope há " << dentro.getNVertices()
 				<< " pontos\n";
 			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 		case QUADTREE:
+			cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
+				<< " pontos\n";
+			cout << "Dentro da Quadtree há " << dentro.getNVertices()
+				<< " pontos\n";
+			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 	}
 
