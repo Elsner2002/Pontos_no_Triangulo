@@ -65,6 +65,8 @@ void mouse(int button, int state, int x, int y);
 void redimensiona( int w, int h );
 Poligono testaColisaoPorForcaBruta(Poligono pontos);
 Poligono testaColisaoPorEnvelope(Poligono pontos);
+Poligono testaColisaoPorQuadtree(Poligono pontos);
+void criaQuadtree();
 void posicionaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
@@ -99,6 +101,8 @@ int main (int argc, char** argv)
 	glutSpecialFunc(flechas);
 	glutMouseFunc(mouse);
 
+	//chama a função para criar a quadtree
+	criaQuadtree();
 	// Inicia o tratamento dos eventos.
 	glutMainLoop();
 
@@ -158,6 +162,8 @@ void display()
 			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 		case QUADTREE:
+			dentro = testaColisaoPorQuadtree(pontosDoCenario);
+			desenhaVerticesColoridos(dentro, Gold);
 			cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
 				<< " pontos\n";
 			cout << "Dentro da Quadtree há " << dentro.getNVertices()
@@ -233,6 +239,16 @@ Poligono testaColisaoPorEnvelope(Poligono pontos)
 	}
 
 	return pontosDentroDoEnvelope;
+}
+
+//fazer teste de colisão por quadtree aqui
+Poligono testaColisaoPorQuadtree(Poligono pontos){
+	return pontos;
+}
+
+//fazer criação da quadtree aqui
+void criaQuadtree(){
+
 }
 
 void criaEnvelope() {
