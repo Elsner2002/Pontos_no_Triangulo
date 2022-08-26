@@ -53,6 +53,7 @@ Ponto pontoClicado;
 bool foiClicado = false;
 
 bool eixosDesenhados = true;
+bool quadtreeDesenhada= false;
 TesteDeColisao testeDeColisao = NADA;
 
 void display();
@@ -117,6 +118,13 @@ void display()
 		glLineWidth(1);
 		glColor3f(1,1,1);
 		desenhaEixos();
+	}
+
+	if (quadtreeDesenhada)
+	{
+		glLineWidth(1);
+		glColor3f(1,1,1);
+		desenhaQuadtree();
 	}
 
 	glPointSize(2);
@@ -405,6 +413,13 @@ void desenhaEixos()
 	glEnd();
 }
 
+void desenhaQuadtree()
+{
+	glBegin(GL_LINES);
+	//colocar quadtree para ser desenhada
+	glEnd();
+}
+
 /**
  * Espera um certo número de segundos e informa
  * quantos frames se passaram neste período.
@@ -460,6 +475,9 @@ void teclado(unsigned char key, int x, int y)
 			break;
 		case ' ':
 			eixosDesenhados ^= true;
+			break;
+		case 'd':
+			quadtreeDesenhada = !quadtreeDesenhada;
 			break;
 		default:
 			break;
