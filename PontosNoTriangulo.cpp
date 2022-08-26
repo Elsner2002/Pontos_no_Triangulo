@@ -54,7 +54,10 @@ bool foiClicado = false;
 
 bool eixosDesenhados = true;
 bool quadtreeDesenhada= false;
+bool quadtreeCriada=true;
 TesteDeColisao testeDeColisao = NADA;
+
+int pontosQuadtree=0;
 
 void display();
 void animate();
@@ -66,7 +69,7 @@ void redimensiona( int w, int h );
 Poligono testaColisaoPorForcaBruta(Poligono pontos);
 Poligono testaColisaoPorEnvelope(Poligono pontos);
 Poligono testaColisaoPorQuadtree(Poligono pontos);
-void criaQuadtree();
+void criaQuadtree(int pontos);
 void posicionaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
@@ -100,9 +103,6 @@ int main (int argc, char** argv)
 	// sempre que o usuário pressionar uma tecla especial.
 	glutSpecialFunc(flechas);
 	glutMouseFunc(mouse);
-
-	//chama a função para criar a quadtree
-	criaQuadtree();
 	// Inicia o tratamento dos eventos.
 	glutMainLoop();
 
@@ -129,6 +129,12 @@ void display()
 		glLineWidth(1);
 		glColor3f(1,1,1);
 		desenhaQuadtree();
+	}
+
+	if(!quadtreeCriada){
+		//chama a função para criar a quadtree
+		criaQuadtree(pontosQuadtree);
+		quadtreeCriada=true;
 	}
 
 	glPointSize(2);
@@ -247,7 +253,7 @@ Poligono testaColisaoPorQuadtree(Poligono pontos){
 }
 
 //fazer criação da quadtree aqui
-void criaQuadtree(){
+void criaQuadtree(int pontos){
 
 }
 
@@ -503,6 +509,12 @@ void teclado(unsigned char key, int x, int y)
 			break;
 		case 'd':
 			quadtreeDesenhada = !quadtreeDesenhada;
+			break;
+		case 'i':
+			//colocar comunicação teclado/programa para o usuário inserir quantos pontos
+			//tem cada parte da quadtree
+			pontosQuadtree;
+			quadtreeCriada=false;
 			break;
 		default:
 			break;
