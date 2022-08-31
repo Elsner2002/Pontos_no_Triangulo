@@ -34,7 +34,7 @@ enum TesteDeColisao {
 	QUADTREE
 };
 
-Temporizador T;
+Temporizador t;
 double acumDeltaT=0;
 double nFrames=0;
 double tempoTotal=0;
@@ -311,7 +311,7 @@ void desenhaVerticesColoridos(Poligono poligono, int cor) {
  *
  * @return em TrianguloBase e CampoDeVisao.
  */
-void CriaTrianguloDoCampoDeVisao()
+void criaTrianguloDoCampoDeVisao()
 {
 	Ponto vetor = Ponto(1,0,0);
 
@@ -368,7 +368,7 @@ void geraPontos(unsigned long int qtd, Ponto min, Ponto max)
  * Move o campo de visão um determinado número de unidades
  * para frente ou para trás.
  */
-void AvancaCampoDeVisao(float distancia)
+void avancaCampoDeVisao(float distancia)
 {
 	Ponto vetor = Ponto(1, 0, 0);
 	vetor.rotacionaZ(anguloDoCampoDeVisao);
@@ -378,7 +378,7 @@ void AvancaCampoDeVisao(float distancia)
 void animate()
 {
 	double dt;
-	dt = T.getDeltaT();
+	dt = t.getDeltaT();
 	acumDeltaT += dt;
 	tempoTotal += dt;
 	nFrames++;
@@ -419,7 +419,7 @@ void init(bool lerArquivo, char *nomeDoArquivo)
 	tamanhoDaJanela = (desenhoMax - desenhoMin);
 	posicaoDoCampoDeVisao = meioDaJanela;
 	anguloDoCampoDeVisao = 0;
-	CriaTrianguloDoCampoDeVisao();
+	criaTrianguloDoCampoDeVisao();
 	posicionaTrianguloDoCampoDeVisao(proporcao);
 	criaEnvelope();
 	posicionaEnvelope();
@@ -547,10 +547,10 @@ void flechas(int flechas_, int x, int y)
 			anguloDoCampoDeVisao -= 2;
 			break;
 		case GLUT_KEY_UP:
-			AvancaCampoDeVisao(2);
+			avancaCampoDeVisao(2);
 			break;
 		case GLUT_KEY_DOWN:
-			AvancaCampoDeVisao(-2);
+			avancaCampoDeVisao(-2);
 			break;
 		default:
 			break;
