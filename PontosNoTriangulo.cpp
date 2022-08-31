@@ -45,6 +45,7 @@ Poligono envelope;
 Poligono trianguloBase;
 Ponto posicaoDoCampoDeVisao;
 float anguloDoCampoDeVisao = 0.0;
+float proporcao = 0.25;
 float envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
 
 Ponto desenhoMin, desenhoMax;
@@ -128,7 +129,7 @@ void display()
 	{
 		glLineWidth(1);
 		glColor3f(1,1,1);
-		desenhaQuadtree();
+		/* desenhaQuadtree(); */
 	}
 
 	if(!quadtreeCriada){
@@ -331,9 +332,9 @@ void CriaTrianguloDoCampoDeVisao()
  * com a orientação de AnguloDoCampoDeVisao.
  * O tamanho do campo de visão é de 25% a largura da janela.
  */
-void PosicionaTrianguloDoCampoDeVisao()
+void posicionaTrianguloDoCampoDeVisao(float proporcao)
 {
-	float tamanho = tamanhoDaJanela.x * 0.25;
+	float tamanho = tamanhoDaJanela.x * proporcao;
 
 	Ponto temp;
 	for (int i=0;i<trianguloBase.getNVertices();i++)
@@ -347,7 +348,7 @@ void PosicionaTrianguloDoCampoDeVisao()
 /**
  * Gera pontos aleatórios em um intervalo.
  */
-void GeraPontos(unsigned long int qtd, Ponto min, Ponto max)
+void geraPontos(unsigned long int qtd, Ponto min, Ponto max)
 {
 	time_t t;
 	Ponto escala = (max - min) * (1.0/1000.0);
@@ -410,7 +411,7 @@ void init(bool lerArquivo, char *nomeDoArquivo)
 	} else {
 		// Gera ou Carrega os pontos do cenario.
 		// Note que o "aspect ratio" dos pontos deve ser o mesmo da janela.
-		GeraPontos(1000, Ponto(0,0), Ponto(500,500));
+		geraPontos(1000, Ponto(0,0), Ponto(500,500));
 	}
 
 	pontosDoCenario.obtemLimites(desenhoMin, desenhoMax);
@@ -419,7 +420,7 @@ void init(bool lerArquivo, char *nomeDoArquivo)
 	posicaoDoCampoDeVisao = meioDaJanela;
 	anguloDoCampoDeVisao = 0;
 	CriaTrianguloDoCampoDeVisao();
-	PosicionaTrianguloDoCampoDeVisao();
+	posicionaTrianguloDoCampoDeVisao(proporcao);
 	criaEnvelope();
 	posicionaEnvelope();
 }
@@ -513,8 +514,21 @@ void teclado(unsigned char key, int x, int y)
 		case 'i':
 			//colocar comunicação teclado/programa para o usuário inserir quantos pontos
 			//tem cada parte da quadtree
-			pontosQuadtree;
+			// pontosQuadtree;
 			quadtreeCriada=false;
+			break;
+		case 'a':
+			if (proporcao > 0) {
+				proporcao -= 0.01;
+			}
+
+			posicionaTrianguloDoCampoDeVisao(proporcao);
+			posicionaEnvelope();
+			break;
+		case 's':
+			proporcao += 0.01;
+			posicionaTrianguloDoCampoDeVisao(proporcao);
+			posicionaEnvelope();
 			break;
 		default:
 			break;
@@ -542,7 +556,7 @@ void flechas(int flechas_, int x, int y)
 			break;
 	}
 
-	PosicionaTrianguloDoCampoDeVisao();
+	posicionaTrianguloDoCampoDeVisao(proporcao);
 	posicionaEnvelope();
 	glutPostRedisplay();
 }
