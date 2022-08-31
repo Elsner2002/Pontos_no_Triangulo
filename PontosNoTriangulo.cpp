@@ -26,6 +26,7 @@ using namespace std;
 #include "Ponto.h"
 #include "Poligono.h"
 #include "Temporizador.h"
+#include "Quadtree.h"
 
 enum TesteDeColisao {
 	NADA,
@@ -248,14 +249,42 @@ Poligono testaColisaoPorEnvelope(Poligono pontos)
 	return pontosDentroDoEnvelope;
 }
 
-//fazer teste de colisão por quadtree aqui
-Poligono testaColisaoPorQuadtree(Poligono pontos){
-	return pontos;
+Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
 }
 
-//fazer criação da quadtree aqui
-void criaQuadtree(int pontos){
+QuadtreeNode<Poligono>* criaQuadtree(Poligono pontos) {
+	if (pontos.getNVertices() > pontosQuadtree) {
+		Poligono pontosNw, pontosNe, pontosSw, pontosSe;
+		Ponto min, max, ponto;
+		pontos.obtemLimites(min, max);
+		float meioX = (min.x + max.x) / 2;
+		float meioY = (min.x + max.x) / 2;
 
+		for (size_t i = 0; i < pontos.getNVertices(); i++) {
+			ponto = pontos.getVertice(i);
+
+			if (ponto.x < meioX) {
+				if (ponto.y < meioY) {
+					pontosSw.insereVertice(ponto);
+				} else {
+					pontosNw.insereVertice(ponto);
+				}
+			} else {
+				if (ponto.y < meioY) {
+					pontosSe.insereVertice(ponto);
+				} else {
+					pontosNe.insereVertice(ponto);
+				}
+			}
+		}
+
+	    return new QuadtreeNode<Poligono>(
+			criaQuadtree(pontosNw), criaQuadtree(pontosNe),
+			criaQuadtree(pontosSw), criaQuadtree(pontosSe)
+		);
+	}
+
+	return new QuadtreeNode<Poligono>(&pontos);
 }
 
 void criaEnvelope() {
