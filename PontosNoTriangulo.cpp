@@ -41,6 +41,7 @@ double nFrames=0;
 double tempoTotal=0;
 
 Poligono pontosDoCenario;
+Ponto minPontosDoCenario, maxPontosDoCenario;
 Poligono campoDeVisao;
 Poligono envelope;
 Poligono trianguloBase;
@@ -56,10 +57,10 @@ bool foiClicado = false;
 
 bool eixosDesenhados = true;
 bool quadtreeDesenhada= false;
-bool quadtreeCriada=true;
+bool quadtreeCriada=false;
 TesteDeColisao testeDeColisao = NADA;
 
-int pontosQuadtree=0;
+int pontosQuadtree = 5;
 
 void display();
 void animate();
@@ -70,8 +71,9 @@ void mouse(int button, int state, int x, int y);
 void redimensiona( int w, int h );
 Poligono testaColisaoPorForcaBruta(Poligono pontos);
 Poligono testaColisaoPorEnvelope(Poligono pontos);
-Poligono testaColisaoPorQuadtree(Poligono pontos);
-void criaQuadtree(int pontos);
+Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree);
+QuadtreeNode<Poligono>* criaQuadtree(Poligono pontos);
+void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree);
 void posicionaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
@@ -113,6 +115,7 @@ int main (int argc, char** argv)
 
 void display()
 {
+	static QuadtreeNode<Poligono> *quadTree;
 	// Limpa a tela com a cor de fundo.
 	glClear(GL_COLOR_BUFFER_BIT);
 	// Define os limites lógicos da área OpenGL dentro da janela.
@@ -126,17 +129,13 @@ void display()
 		desenhaEixos();
 	}
 
-	if (quadtreeDesenhada)
-	{
-		glLineWidth(1);
-		glColor3f(1,1,1);
-		/* desenhaQuadtree(); */
+	if(!quadtreeCriada){
+		quadTree = criaQuadtree(pontosDoCenario);
+		quadtreeCriada = true;
 	}
 
-	if(!quadtreeCriada){
-		//chama a função para criar a quadtree
-		criaQuadtree(pontosQuadtree);
-		quadtreeCriada=true;
+	if (quadtreeDesenhada) {
+		desenhaQuadtree(quadTree);
 	}
 
 	glPointSize(2);
@@ -170,7 +169,7 @@ void display()
 			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 		case QUADTREE:
-			dentro = testaColisaoPorQuadtree(pontosDoCenario);
+			dentro = *testaColisaoPorQuadtree(quadTree);
 			desenhaVerticesColoridos(dentro, Gold);
 			cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
 				<< " pontos\n";
@@ -249,16 +248,77 @@ Poligono testaColisaoPorEnvelope(Poligono pontos)
 	return pontosDentroDoEnvelope;
 }
 
+bool testaColisaoDeEnvelopes(Poligono a, Poligono b)
+{
+	Ponto minA, maxA, minB, maxB;
+	a.obtemLimites(minA, maxA);
+	Ponto meioA = maxA - minA;
+	b.obtemLimites(minB, maxB);
+	Ponto meioB = maxB - minB;
+
+	size_t larguraA, larguraB, alturaA, alturaB;
+	larguraA = maxA.x - minA.x;
+	larguraB = maxB.x - minB.x;
+	alturaA = maxA.y - minA.y;
+	alturaB = maxB.y - minB.y;
+
+	if (
+		meioA.x < meioB.x + larguraB &&
+		meioB.x < meioA.x + larguraA &&
+		meioA.y < meioB.y + alturaB &&
+		meioB.y < meioA.y + alturaA
+	) {
+		return true;
+	}
+
+	return false;
+}
+
 Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
+	Poligono *pontosDentroDoEnvelope = new Poligono();
+	Poligono envelopeQuadtree = Poligono();
+	envelopeQuadtree.insereVertice(quadtree->min);
+	envelopeQuadtree.insereVertice(quadtree->max);
+
+	if (testaColisaoDeEnvelopes(envelope, envelopeQuadtree)) {
+		if (quadtree->isLeaf()) {
+			if (quadtree->data != nullptr) {
+				for (size_t i = 0; i < quadtree->data->getNVertices(); i++) {
+					pontosDentroDoEnvelope->insereVertice(
+						quadtree->data->getVertice(i)
+					);
+				}
+			}
+		} else {
+			Poligono *poligonos[] = {
+				testaColisaoPorQuadtree(quadtree->nw),
+				testaColisaoPorQuadtree(quadtree->ne),
+				testaColisaoPorQuadtree(quadtree->sw),
+				testaColisaoPorQuadtree(quadtree->se),
+			};
+
+			for(auto poligono : poligonos) {
+				for (size_t i = 0; i < poligono->getNVertices(); i++) {
+					pontosDentroDoEnvelope->insereVertice(
+						poligono->getVertice(i)
+					);
+				}
+			}
+		}
+	}
+
+	return pontosDentroDoEnvelope;
 }
 
 QuadtreeNode<Poligono>* criaQuadtree(Poligono pontos) {
+	Ponto min, max;
+	pontos.obtemLimites(min, max);
+
 	if (pontos.getNVertices() > pontosQuadtree) {
 		Poligono pontosNw, pontosNe, pontosSw, pontosSe;
-		Ponto min, max, ponto;
-		pontos.obtemLimites(min, max);
 		float meioX = (min.x + max.x) / 2;
 		float meioY = (min.x + max.x) / 2;
+		Ponto ponto;
 
 		for (size_t i = 0; i < pontos.getNVertices(); i++) {
 			ponto = pontos.getVertice(i);
@@ -280,11 +340,29 @@ QuadtreeNode<Poligono>* criaQuadtree(Poligono pontos) {
 
 	    return new QuadtreeNode<Poligono>(
 			criaQuadtree(pontosNw), criaQuadtree(pontosNe),
-			criaQuadtree(pontosSw), criaQuadtree(pontosSe)
+			criaQuadtree(pontosSw), criaQuadtree(pontosSe),
+			min, max
 		);
 	}
 
-	return new QuadtreeNode<Poligono>(&pontos);
+	return new QuadtreeNode<Poligono>(&pontos, min, max);
+}
+
+void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree)
+{
+	glLineWidth(1);
+	glColor3f(1.0, 1.0, 1.0);
+	Poligono envelopeQuadtree = Poligono();
+	envelopeQuadtree.insereVertice(quadtree->min);
+	envelopeQuadtree.insereVertice(quadtree->max);
+	envelopeQuadtree.desenhaPoligono();
+
+	if (!quadtree->isLeaf()) {
+		desenhaQuadtree(quadtree->nw);
+		desenhaQuadtree(quadtree->ne);
+		desenhaQuadtree(quadtree->sw);
+		desenhaQuadtree(quadtree->se);
+	}
 }
 
 void criaEnvelope() {
@@ -391,6 +469,8 @@ void geraPontos(unsigned long int qtd, Ponto min, Ponto max)
 		y = y * escala.y + min.y;
 		pontosDoCenario.insereVertice(Ponto(x,y));
 	}
+
+	pontosDoCenario.obtemLimites(minPontosDoCenario, maxPontosDoCenario);
 }
 
 /**
@@ -471,13 +551,6 @@ void desenhaEixos()
 	// Eixo vertical.
 	glVertex2f(meioDaJanela.x,desenhoMin.y);
 	glVertex2f(meioDaJanela.x,desenhoMax.y);
-	glEnd();
-}
-
-void desenhaQuadtree()
-{
-	glBegin(GL_LINES);
-	//colocar quadtree para ser desenhada
 	glEnd();
 }
 
