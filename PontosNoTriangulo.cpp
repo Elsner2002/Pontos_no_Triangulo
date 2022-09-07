@@ -125,7 +125,7 @@ void display()
 	if (eixosDesenhados)
 	{
 		glLineWidth(1);
-		glColor3f(1,1,1);
+		glColor3f(0,0,0);
 		desenhaEixos();
 	}
 
@@ -151,7 +151,7 @@ void display()
 
 	switch (testeDeColisao) {
 		case NADA:
-		    desenhaVerticesColoridos(pontosDoCenario, Quartz);
+		    desenhaVerticesColoridos(pontosDoCenario, DarkWood);
 			break;
 		case FORCA_BRUTA:
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
@@ -522,7 +522,7 @@ void animate()
 void init(bool lerArquivo, char *nomeDoArquivo)
 {
 	// Define a cor do fundo da tela.
-	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	if (lerArquivo) {
 		pontosDoCenario.LePoligono(nomeDoArquivo);
