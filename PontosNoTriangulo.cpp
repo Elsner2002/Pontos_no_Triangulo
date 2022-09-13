@@ -503,12 +503,45 @@ void contaTempo(double tempo)
 	}
 }
 
+void PosicionaCampoDeVisao(int n)
+{
+	switch (n) {
+		case 1:
+			AnguloDoCampoDeVisao = 0;
+			PosicaoDoCampoDeVisao = Meio;
+			break;
+		case 2:
+			AnguloDoCampoDeVisao = 90;
+			PosicaoDoCampoDeVisao = Meio;
+			break;
+		case 3:
+			AnguloDoCampoDeVisao = 90;
+			PosicaoDoCampoDeVisao = Meio*0.5;
+			break;
+		case 4:
+			AnguloDoCampoDeVisao = 0;
+			PosicaoDoCampoDeVisao = Meio + Meio*0.5;
+			break;
+		default:
+			break;
+	}
+	PosicionaTrianguloDoCampoDeVisao();
+}
+
 void teclado(unsigned char key, int x, int y)
 {
 	switch (key) {
 		// Tecla ESC
 		case 27:
 			exit (0);
+			break;
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+			int i;
+			i = key - '0';
+			PosicionaCampoDeVisao(i);
 			break;
 		case 't':
 			contaTempo(3);
