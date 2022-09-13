@@ -1,3 +1,4 @@
+#include <GL/freeglut_std.h>
 #include <GL/gl.h>
 #include <cstddef>
 #include <iostream>
@@ -42,7 +43,6 @@ double nFrames = 0;
 double tempoTotal = 0;
 
 Poligono pontosDoCenario;
-Ponto minPontosDoCenario, maxPontosDoCenario, meioPontosDoCenario;
 Poligono campoDeVisao;
 Poligono envelope;
 Poligono trianguloBase;
@@ -51,7 +51,7 @@ float anguloDoCampoDeVisao = 0.0;
 float proporcao = 0.25;
 float envelopeMaiorX, envelopeMaiorY, envelopeMenorY, envelopeMenorX;
 
-Ponto desenhoMin, desenhoMax;
+Ponto minPontosDoCenario, maxPontosDoCenario, meioPontosDoCenario;
 Ponto tamanhoDaJanela, meioDaJanela;
 Ponto pontoClicado;
 bool foiClicado = false;
@@ -61,8 +61,9 @@ bool quadtreeDesenhada = false;
 bool quadtreeCriada = false;
 TesteDeColisao testeDeColisao = NADA;
 
-int pontosFolhaQuadtree = 25;
+int pontosFolhaQuadtree = 10;
 int niveisQuadtreeTestados = 0;
+bool imprimeResultados = false;
 
 void display();
 void animate();
@@ -151,8 +152,22 @@ void display()
 
 	static Poligono dentro;
 
-	if (testeDeColisao != NADA) {
-		cout << "Modo: " << testeDeColisao << " ";
+	if (imprimeResultados && testeDeColisao != NADA) {
+		std::string modo = "";
+
+		switch (testeDeColisao) {
+			case FORCA_BRUTA:
+				modo = "Força Bruta";
+				break;
+			case ENVELOPE:
+				modo = "Envelope";
+				break;
+			case QUADTREE:
+				modo = "Quadtree";
+				break;
+		}
+
+		cout << "Modo: " << modo << std::endl;
 	}
 
 	switch (testeDeColisao) {
@@ -161,7 +176,6 @@ void display()
 			break;
 		case FORCA_BRUTA:
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
-			cout << "Testes Força Bruta: " << pontosDoCenario.getNVertices() << std::endl;
 			break;
 		case ENVELOPE:
 			glLineWidth(1);
@@ -170,10 +184,7 @@ void display()
 
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
 			desenhaVerticesColoridos(dentro, Gold);
-			cout << "Testes Força Bruta: " << dentro.getNVertices() << " - ";
 			dentro = testaColisaoPorForcaBruta(dentro);
-
-			cout << "Testes Envelope X Ponto: " << pontosDoCenario.getNVertices() << std::endl;
 			break;
 		case QUADTREE:
 			glLineWidth(1);
@@ -183,10 +194,12 @@ void display()
 			niveisQuadtreeTestados = 0;
 			dentro = *testaColisaoPorQuadtree(quadTree);
 			desenhaVerticesColoridos(dentro, Gold);
-			cout << "Testes Força Bruta: " << dentro.getNVertices() << " - ";
-			dentro = testaColisaoPorForcaBruta(dentro);
 
-			cout << "Testes Envelope X Envelope: " << niveisQuadtreeTestados << std::endl;
+			if (imprimeResultados) {
+				cout << "Testes Envelope X Envelope: " << niveisQuadtreeTestados << std::endl;
+			}
+
+			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 	}
 
@@ -205,6 +218,11 @@ void display()
 
 Poligono testaColisaoPorForcaBruta(Poligono pontos)
 {
+	if (imprimeResultados) {
+		cout << "Testes Força Bruta: " << pontos.getNVertices() << std::endl << std::endl;
+		imprimeResultados = false;
+	}
+
 	Poligono pontosDentroDoTriangulo;
 
 	Ponto verticesDoTriangulo[] = {
@@ -240,6 +258,10 @@ Poligono testaColisaoPorForcaBruta(Poligono pontos)
 
 Poligono testaColisaoPorEnvelope(Poligono pontos)
 {
+	if (imprimeResultados) {
+		std::cout << "Testes Envelope X Ponto: " << pontos.getNVertices() << std::endl;
+	}
+
 	Poligono pontosDentroDoEnvelope;
 
 	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
@@ -275,9 +297,10 @@ Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
 	Poligono envelopeQuadtree = Poligono();
 	envelopeQuadtree.insereVertice(quadtree->min);
 	envelopeQuadtree.insereVertice(quadtree->max);
-	niveisQuadtreeTestados++;
 
 	if (testaColisaoDeEnvelopes(envelope, envelopeQuadtree)) {
+		niveisQuadtreeTestados++;
+
 		if (quadtree->isLeaf()) {
 			return quadtree->data;
 		} else {
@@ -487,11 +510,7 @@ void geraPontos(unsigned long int qtd, Ponto min, Ponto max)
 	}
 
 	pontosDoCenario.obtemLimites(minPontosDoCenario, maxPontosDoCenario);
-
-	meioPontosDoCenario = Ponto(
-		(maxPontosDoCenario.x + minPontosDoCenario.x) / 2,
-		(maxPontosDoCenario.x + minPontosDoCenario.x) / 2
-	);
+	meioPontosDoCenario = (minPontosDoCenario + maxPontosDoCenario) * 0.5;
 }
 
 /**
@@ -544,9 +563,10 @@ void init(bool lerArquivo, char *nomeDoArquivo)
 		geraPontos(100, Ponto(0,0), Ponto(500,500));
 	}
 
-	pontosDoCenario.obtemLimites(desenhoMin, desenhoMax);
-	meioDaJanela = (desenhoMax + desenhoMin) * 0.5;
-	tamanhoDaJanela = (desenhoMax - desenhoMin);
+	pontosDoCenario.obtemLimites(minPontosDoCenario, maxPontosDoCenario);
+	meioPontosDoCenario = (minPontosDoCenario + maxPontosDoCenario) * 0.5;
+	meioDaJanela = (maxPontosDoCenario + minPontosDoCenario) * 0.5;
+	tamanhoDaJanela = (maxPontosDoCenario - minPontosDoCenario);
 	posicaoDoCampoDeVisao = meioDaJanela;
 	anguloDoCampoDeVisao = 0;
 	criaTrianguloDoCampoDeVisao();
@@ -567,11 +587,11 @@ void desenhaEixos()
 {
 	glBegin(GL_LINES);
 	// Eixo horizontal.
-	glVertex2f(desenhoMin.x,meioDaJanela.y);
-	glVertex2f(desenhoMax.x,meioDaJanela.y);
+	glVertex2f(minPontosDoCenario.x,meioDaJanela.y);
+	glVertex2f(maxPontosDoCenario.x,meioDaJanela.y);
 	// Eixo vertical.
-	glVertex2f(meioDaJanela.x,desenhoMin.y);
-	glVertex2f(meioDaJanela.x,desenhoMax.y);
+	glVertex2f(meioDaJanela.x,minPontosDoCenario.y);
+	glVertex2f(meioDaJanela.x,maxPontosDoCenario.y);
 	glEnd();
 }
 
@@ -621,6 +641,7 @@ void PosicionaCampoDeVisao(int n)
 	}
 
 	posicionaTrianguloDoCampoDeVisao(proporcao);
+	posicionaEnvelope();
 }
 
 void teclado(unsigned char key, int x, int y)
@@ -650,6 +671,7 @@ void teclado(unsigned char key, int x, int y)
 		case '3':
 		case '4':
 			cout << "Posição " << key<< "\n";
+			imprimeResultados = true;
 			int i;
 			i = key - '0';
 			PosicionaCampoDeVisao(i);
@@ -677,6 +699,9 @@ void teclado(unsigned char key, int x, int y)
 			} else {
 				testeDeColisao = QUADTREE;
 			}
+			break;
+		case 'r':
+			imprimeResultados = true;
 			break;
 		case ' ':
 			eixosDesenhados ^= true;
@@ -770,7 +795,7 @@ void redimensiona( int w, int h )
 	// Define a area a ser ocupada pela area OpenGL dentro da Janela.
 	glViewport(0, 0, w, h);
 	// Define os limites logicos da area OpenGL dentro da Janela.
-	glOrtho(desenhoMin.x, desenhoMax.x, desenhoMin.y, desenhoMax.y, 0, 1);
+	glOrtho(minPontosDoCenario.x, maxPontosDoCenario.x, minPontosDoCenario.y, maxPontosDoCenario.y, 0, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
