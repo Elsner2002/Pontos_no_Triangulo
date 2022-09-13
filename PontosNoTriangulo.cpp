@@ -42,7 +42,7 @@ double nFrames = 0;
 double tempoTotal = 0;
 
 Poligono pontosDoCenario;
-Ponto minPontosDoCenario, maxPontosDoCenario;
+Ponto minPontosDoCenario, maxPontosDoCenario, meioPontosDoCenario;
 Poligono campoDeVisao;
 Poligono envelope;
 Poligono trianguloBase;
@@ -188,7 +188,7 @@ void display()
 			if(qt==0){
 				cout << "Modo: " << testeDeColisao<< "- ";
 			}
-      
+
 			desenhaVerticesColoridos(dentro, Gold);
 			//cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()<< " pontos\n";
 			//cout << "Dentro da Quadtree há " << dentro.getNVertices()<< " pontos\n";
@@ -473,8 +473,8 @@ void criaTrianguloDoCampoDeVisao()
 }
 
 /**
- * Posiciona o campo de visão em PosicaoDoCampoDeVisao,
- * com a orientação de AnguloDoCampoDeVisao.
+ * Posiciona o campo de visão em posicaoDoCampoDeVisao,
+ * com a orientação de anguloDoCampoDeVisao.
  * O tamanho do campo de visão é de 25% a largura da janela.
  */
 void posicionaTrianguloDoCampoDeVisao(float proporcao)
@@ -509,6 +509,11 @@ void geraPontos(unsigned long int qtd, Ponto min, Ponto max)
 	}
 
 	pontosDoCenario.obtemLimites(minPontosDoCenario, maxPontosDoCenario);
+
+	meioPontosDoCenario = Ponto(
+		(maxPontosDoCenario.x + minPontosDoCenario.x) / 2,
+		(maxPontosDoCenario.x + minPontosDoCenario.x) / 2
+	);
 }
 
 /**
@@ -618,25 +623,26 @@ void PosicionaCampoDeVisao(int n)
 {
 	switch (n) {
 		case 1:
-			AnguloDoCampoDeVisao = 0;
-			PosicaoDoCampoDeVisao = Meio;
+			anguloDoCampoDeVisao = 0;
+			posicaoDoCampoDeVisao = meioPontosDoCenario;
 			break;
 		case 2:
-			AnguloDoCampoDeVisao = 90;
-			PosicaoDoCampoDeVisao = Meio;
+			anguloDoCampoDeVisao = 90;
+			posicaoDoCampoDeVisao = meioPontosDoCenario;
 			break;
 		case 3:
-			AnguloDoCampoDeVisao = 90;
-			PosicaoDoCampoDeVisao = Meio*0.5;
+			anguloDoCampoDeVisao = 90;
+			posicaoDoCampoDeVisao = meioPontosDoCenario * 0.5;
 			break;
 		case 4:
-			AnguloDoCampoDeVisao = 0;
-			PosicaoDoCampoDeVisao = Meio + Meio*0.5;
+			anguloDoCampoDeVisao = 0;
+			posicaoDoCampoDeVisao = meioPontosDoCenario + meioPontosDoCenario * 0.5;
 			break;
 		default:
 			break;
 	}
-	PosicionaTrianguloDoCampoDeVisao();
+
+	posicionaTrianguloDoCampoDeVisao(proporcao);
 }
 
 void teclado(unsigned char key, int x, int y)
