@@ -4,6 +4,7 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
+#include <string>
 
 #ifdef WIN32
 	#include <windows.h>
@@ -36,9 +37,9 @@ enum TesteDeColisao {
 };
 
 Temporizador t;
-double acumDeltaT=0;
-double nFrames=0;
-double tempoTotal=0;
+double acumDeltaT = 0;
+double nFrames = 0;
+double tempoTotal = 0;
 
 Poligono pontosDoCenario;
 Ponto minPontosDoCenario, maxPontosDoCenario;
@@ -56,11 +57,11 @@ Ponto pontoClicado;
 bool foiClicado = false;
 
 bool eixosDesenhados = true;
-bool quadtreeDesenhada= false;
-bool quadtreeCriada=false;
+bool quadtreeDesenhada = false;
+bool quadtreeCriada = false;
 TesteDeColisao testeDeColisao = NADA;
 
-int pontosQuadtree = 25;
+int pontosFolhaQuadtree = 25;
 
 void display();
 void animate();
@@ -131,6 +132,7 @@ void display()
 	if(!quadtreeCriada){
 		Ponto min, max;
 		pontosDoCenario.obtemLimites(min, max);
+		delete quadTree;
 		quadTree = criaQuadtree(&pontosDoCenario, min, max);
 		quadtreeCriada = true;
 	}
@@ -297,7 +299,7 @@ Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
 }
 
 QuadtreeNode<Poligono>* criaQuadtree(Poligono *pontos, Ponto min, Ponto max) {
-	if (pontos->getNVertices() > pontosQuadtree) {
+	if (pontos->getNVertices() > pontosFolhaQuadtree) {
 		Poligono pontosNw, pontosNe, pontosSw, pontosSe;
 		float meioX = (min.x + max.x) / 2;
 		float meioY = (min.y + max.y) / 2;
@@ -589,6 +591,21 @@ void contaTempo(double tempo)
 
 void teclado(unsigned char key, int x, int y)
 {
+	static bool modificandoPontosFolhaQuadtree = false;
+	static std::string inputPontosFolhaQuadtree = "";
+
+	if (modificandoPontosFolhaQuadtree) {
+		if (key >= '0' && key <= '9') {
+			inputPontosFolhaQuadtree += key;
+			return;
+		} else {
+			pontosFolhaQuadtree = stoi(inputPontosFolhaQuadtree);
+			inputPontosFolhaQuadtree = "";
+			modificandoPontosFolhaQuadtree = false;
+			quadtreeCriada = false;
+		}
+	}
+
 	switch (key) {
 		// Tecla ESC
 		case 27:
@@ -625,10 +642,7 @@ void teclado(unsigned char key, int x, int y)
 			quadtreeDesenhada = !quadtreeDesenhada;
 			break;
 		case 'i':
-			//colocar comunicação teclado/programa para o usuário inserir quantos pontos
-			//tem cada parte da quadtree
-			// pontosQuadtree;
-			quadtreeCriada=false;
+			modificandoPontosFolhaQuadtree = true;
 			break;
 		case 'a':
 			if (proporcao > 0) {
