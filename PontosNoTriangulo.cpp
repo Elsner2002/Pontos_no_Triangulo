@@ -351,6 +351,10 @@ void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree, size_t nivel)
 		{ 0.0, 1.0, 1.0 },
 	};
 
+	if (quadtree->isLeaf()) {
+		return;
+	}
+
 	const float *cores = CORES[nivel % NUM_CORES];
 
 	glBegin(GL_LINES);
@@ -363,13 +367,11 @@ void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree, size_t nivel)
 	glVertex2f(meioX, quadtree->min.y);
 	glVertex2f(meioX, quadtree->max.y);
 
-	if (!quadtree->isLeaf()) {
-		nivel++;
-		desenhaQuadtree(quadtree->nw, nivel);
-		desenhaQuadtree(quadtree->ne, nivel);
-		desenhaQuadtree(quadtree->sw, nivel);
-		desenhaQuadtree(quadtree->se, nivel);
-	}
+	nivel++;
+	desenhaQuadtree(quadtree->nw, nivel);
+	desenhaQuadtree(quadtree->ne, nivel);
+	desenhaQuadtree(quadtree->sw, nivel);
+	desenhaQuadtree(quadtree->se, nivel);
 
 	glEnd();
 }
