@@ -62,10 +62,7 @@ bool quadtreeCriada = false;
 TesteDeColisao testeDeColisao = NADA;
 
 int pontosFolhaQuadtree = 25;
-int en=1;
-int fb=1;
-int qt=1;
-int folhasQT=0;
+int niveisQuadtreeTestados = 0;
 
 void display();
 void animate();
@@ -154,56 +151,48 @@ void display()
 
 	static Poligono dentro;
 
+	if (testeDeColisao != NADA) {
+		cout << "Modo: " << testeDeColisao << " ";
+	}
+
 	switch (testeDeColisao) {
 		case NADA:
 		    desenhaVerticesColoridos(pontosDoCenario, DarkWood);
 			break;
 		case FORCA_BRUTA:
-			if(fb==0){
-				cout << "Modo: " << testeDeColisao<< "- ";
-			}
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
-			//cout << "Usa Forca Bruta em " << pontosDoCenario.getNVertices()<< " pontos\n";
-			//cout << "Fora do triângulo há " << pontosDoCenario.getNVertices()-dentro.getNVertices()<< " pontos\n";
+			cout << "Testes Força Bruta: " << pontosDoCenario.getNVertices() << std::endl;
 			break;
 		case ENVELOPE:
-			if(en==0){
-				cout << "Modo: " << testeDeColisao<< "- ";
-			}
 			glLineWidth(1);
 			glColor3f(0,0,0);
 			envelope.desenhaPoligono();
+
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
 			desenhaVerticesColoridos(dentro, Gold);
-			//cout << "Usa Envelope em " << pontosDoCenario.getNVertices()<< " pontos\n";
-			//cout << "Fora do envelope há " << pontosDoCenario.getNVertices()-dentro.getNVertices()<< " pontos\n";
-			//cout << "Dentro do envelope há " << dentro.getNVertices()<< " pontos\n";
+			cout << "Testes Força Bruta: " << dentro.getNVertices() << " - ";
 			dentro = testaColisaoPorForcaBruta(dentro);
+
+			cout << "Testes Envelope X Ponto: " << pontosDoCenario.getNVertices() << std::endl;
 			break;
 		case QUADTREE:
 			glLineWidth(1);
 			glColor3f(0,0,0);
 			envelope.desenhaPoligono();
-			folhasQT=0;
+
+			niveisQuadtreeTestados = 0;
 			dentro = *testaColisaoPorQuadtree(quadTree);
-
-			if(qt==0){
-				cout << "Modo: " << testeDeColisao<< "- ";
-				cout << "Testes Envelope X Envelope: " << folhasQT<< " ";
-			}
-
 			desenhaVerticesColoridos(dentro, Gold);
-			//cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()<< " pontos\n";
-			//cout << "Dentro da Quadtree há " << dentro.getNVertices()<< " pontos\n";
+			cout << "Testes Força Bruta: " << dentro.getNVertices() << " - ";
 			dentro = testaColisaoPorForcaBruta(dentro);
+
+			cout << "Testes Envelope X Envelope: " << niveisQuadtreeTestados << std::endl;
 			break;
 	}
 
 	if (testeDeColisao != NADA) {
 		desenhaVerticesColoridos(dentro, ForestGreen);
-		//cout << "Dentro do triângulo há " << dentro.getNVertices()<< " pontos\n";
 	}
-
 
 	if (foiClicado)
 	{
@@ -216,18 +205,6 @@ void display()
 
 Poligono testaColisaoPorForcaBruta(Poligono pontos)
 {
-	if(fb==0){
-		cout << "Nro de testes ForcaBruta: " << pontos.getNVertices()<< "\n";
-		fb=1;
-	}
-	if(en==0){
-		cout << "Nro de testes ForcaBruta: " << pontos.getNVertices()<< "\n";
-		en=1;
-	}
-	if(qt==0){
-		cout << "Nro de testes ForcaBruta: " << pontos.getNVertices()<< "\n";
-		qt=1;
-	}
 	Poligono pontosDentroDoTriangulo;
 
 	Ponto verticesDoTriangulo[] = {
@@ -263,9 +240,6 @@ Poligono testaColisaoPorForcaBruta(Poligono pontos)
 
 Poligono testaColisaoPorEnvelope(Poligono pontos)
 {
-	if(en==0){
-		cout << "Testes EnvelopeXPontos: " << pontos.getNVertices()<< "\n";
-	}
 	Poligono pontosDentroDoEnvelope;
 
 	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
@@ -301,10 +275,10 @@ Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
 	Poligono envelopeQuadtree = Poligono();
 	envelopeQuadtree.insereVertice(quadtree->min);
 	envelopeQuadtree.insereVertice(quadtree->max);
+	niveisQuadtreeTestados++;
 
 	if (testaColisaoDeEnvelopes(envelope, envelopeQuadtree)) {
 		if (quadtree->isLeaf()) {
-			folhasQT++;
 			return quadtree->data;
 		} else {
 			Poligono *poligonos[] = {
@@ -675,9 +649,6 @@ void teclado(unsigned char key, int x, int y)
 		case '2':
 		case '3':
 		case '4':
-			fb=0;
-			en=0;
-			qt=0;
 			cout << "Posição " << key<< "\n";
 			int i;
 			i = key - '0';
