@@ -65,6 +65,7 @@ int pontosFolhaQuadtree = 25;
 int en=1;
 int fb=1;
 int qt=1;
+int folhasQT=0;
 
 void display();
 void animate();
@@ -183,10 +184,12 @@ void display()
 			glLineWidth(1);
 			glColor3f(0,0,0);
 			envelope.desenhaPoligono();
+			folhasQT=0;
 			dentro = *testaColisaoPorQuadtree(quadTree);
 
 			if(qt==0){
 				cout << "Modo: " << testeDeColisao<< "- ";
+				cout << "Testes Envelope X Envelope: " << folhasQT<< " ";
 			}
       
 			desenhaVerticesColoridos(dentro, Gold);
@@ -301,6 +304,7 @@ Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
 
 	if (testaColisaoDeEnvelopes(envelope, envelopeQuadtree)) {
 		if (quadtree->isLeaf()) {
+			folhasQT++;
 			return quadtree->data;
 		} else {
 			Poligono *poligonos[] = {
