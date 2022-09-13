@@ -60,6 +60,9 @@ bool quadtreeCriada=true;
 TesteDeColisao testeDeColisao = NADA;
 
 int pontosQuadtree=10;
+int en=1;
+int fb=1;
+int qt=1;
 
 void display();
 void animate();
@@ -153,39 +156,42 @@ void display()
 		    desenhaVerticesColoridos(pontosDoCenario, DarkWood);
 			break;
 		case FORCA_BRUTA:
+			if(fb==0){
+				cout << "Modo: " << testeDeColisao<< "- ";
+			}
 			dentro = testaColisaoPorForcaBruta(pontosDoCenario);
-			cout << "Usa Forca Bruta em " << pontosDoCenario.getNVertices()<< " pontos\n";
-			cout << "Fora do triângulo há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
-				<< " pontos\n";
+			//cout << "Usa Forca Bruta em " << pontosDoCenario.getNVertices()<< " pontos\n";
+			//cout << "Fora do triângulo há " << pontosDoCenario.getNVertices()-dentro.getNVertices()<< " pontos\n";
 			break;
 		case ENVELOPE:
+			if(en==0){
+				cout << "Modo: " << testeDeColisao<< "- ";
+			}
 			glLineWidth(1);
 			glColor3f(1,1,0);
 			envelope.desenhaPoligono();
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
 			desenhaVerticesColoridos(dentro, Gold);
-			cout << "Usa Envelope em " << pontosDoCenario.getNVertices()<< " pontos\n";
-			cout << "Fora do envelope há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
-				<< " pontos\n";
-			cout << "Dentro do envelope há " << dentro.getNVertices()
-				<< " pontos\n";
+			//cout << "Usa Envelope em " << pontosDoCenario.getNVertices()<< " pontos\n";
+			//cout << "Fora do envelope há " << pontosDoCenario.getNVertices()-dentro.getNVertices()<< " pontos\n";
+			//cout << "Dentro do envelope há " << dentro.getNVertices()<< " pontos\n";
 			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 		case QUADTREE:
+			if(qt==0){
+				cout << "Modo: " << testeDeColisao<< "- ";
+			}
 			dentro = testaColisaoPorQuadtree(pontosDoCenario);
 			desenhaVerticesColoridos(dentro, Gold);
-			cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
-				<< " pontos\n";
-			cout << "Dentro da Quadtree há " << dentro.getNVertices()
-				<< " pontos\n";
+			//cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()<< " pontos\n";
+			//cout << "Dentro da Quadtree há " << dentro.getNVertices()<< " pontos\n";
 			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 	}
 
 	if (testeDeColisao != NADA) {
 		desenhaVerticesColoridos(dentro, ForestGreen);
-		cout << "Dentro do triângulo há " << dentro.getNVertices()
-			<< " pontos\n";
+		//cout << "Dentro do triângulo há " << dentro.getNVertices()<< " pontos\n";
 	}
 
 
@@ -200,6 +206,18 @@ void display()
 
 Poligono testaColisaoPorForcaBruta(Poligono pontos)
 {
+	if(fb==0){
+		cout << "Nro de testes ForcaBruta: " << pontos.getNVertices()<< "\n";
+		fb=1;
+	}
+	if(en==0){
+		cout << "Nro de testes ForcaBruta: " << pontos.getNVertices()<< "\n";
+		en=1;
+	}
+	if(qt==0){
+		cout << "Nro de testes ForcaBruta: " << pontos.getNVertices()<< "\n";
+		qt=1;
+	}
 	Poligono pontosDentroDoTriangulo;
 
 	Ponto verticesDoTriangulo[] = {
@@ -235,6 +253,9 @@ Poligono testaColisaoPorForcaBruta(Poligono pontos)
 
 Poligono testaColisaoPorEnvelope(Poligono pontos)
 {
+	if(en==0){
+		cout << "Testes EnvelopeXPontos: " << pontos.getNVertices()<< "\n";
+	}
 	Poligono pontosDentroDoEnvelope;
 
 	for (std::size_t i = 0; i < pontos.getNVertices(); i++) {
@@ -421,9 +442,9 @@ void animate()
 	}
 	if (tempoTotal > 5.0)
 	{
-		cout << "Tempo Acumulado: "  << tempoTotal << " segundos. " ;
-		cout << "Nros de Frames sem desenho: " << nFrames << endl;
-		cout << "FPS(sem desenho): " << nFrames/tempoTotal << endl;
+		//cout << "Tempo Acumulado: "  << tempoTotal << " segundos. " ;
+		//cout << "Nros de Frames sem desenho: " << nFrames << endl;
+		//cout << "FPS(sem desenho): " << nFrames/tempoTotal << endl;
 		tempoTotal = 0;
 		nFrames = 0;
 	}
@@ -492,14 +513,14 @@ void contaTempo(double tempo)
 	Temporizador T;
 
 	unsigned long cont = 0;
-	cout << "Inicio contagem de " << tempo << "segundos ..." << flush;
+	//cout << "Inicio contagem de " << tempo << "segundos ..." << flush;
 	while(true)
 	{
 		tempo -= T.getDeltaT();
 		cont++;
 		if (tempo <= 0.0)
 		{
-			cout << "fim! - Passaram-se " << cont << " frames." << endl;
+			//cout << "fim! - Passaram-se " << cont << " frames." << endl;
 			break;
 		}
 	}
@@ -541,6 +562,10 @@ void teclado(unsigned char key, int x, int y)
 		case '2':
 		case '3':
 		case '4':
+			fb=0;
+			en=0;
+			qt=0;
+			cout << "Posição " << key<< "\n";
 			int i;
 			i = key - '0';
 			PosicionaCampoDeVisao(i);
