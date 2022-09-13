@@ -15,14 +15,6 @@ struct QuadtreeNode {
 		this->max = max;
 	}
 
-	~QuadtreeNode() {
-		delete nw;
-		delete ne;
-		delete sw;
-		delete se;
-		delete data;
-	}
-
 	QuadtreeNode(
 		QuadtreeNode *nw, QuadtreeNode *ne,
 		QuadtreeNode *sw, QuadtreeNode *se,
@@ -37,11 +29,19 @@ struct QuadtreeNode {
 		this->max = max;
 	}
 
+	~QuadtreeNode() {
+		delete nw;
+		delete ne;
+		delete sw;
+		delete se;
+		delete data;
+	}
+
 	bool isLeaf();
 };
 
 template <typename T>
 bool QuadtreeNode<T>::isLeaf() {
-	return nw == nullptr;
+	return data != nullptr;
 }
 

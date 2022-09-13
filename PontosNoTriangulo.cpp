@@ -60,7 +60,7 @@ bool quadtreeDesenhada= false;
 bool quadtreeCriada=false;
 TesteDeColisao testeDeColisao = NADA;
 
-int pontosQuadtree = 20;
+int pontosQuadtree = 25;
 
 void display();
 void animate();
@@ -75,7 +75,6 @@ Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree);
 QuadtreeNode<Poligono>* criaQuadtree(Poligono *pontos, Ponto min, Ponto max);
 void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree, size_t nivel);
 void posicionaEnvelope();
-void desenhaEnvelope();
 void desenhaEixos();
 void desenhaVerticesColoridos(Poligono poligono, int cor);
 
@@ -140,7 +139,7 @@ void display()
 		desenhaQuadtree(quadTree, 0);
 	}
 
-	glPointSize(2);
+	glPointSize(4);
 	desenhaVerticesColoridos(pontosDoCenario, Firebrick);
 
 	glLineWidth(3);
@@ -160,7 +159,7 @@ void display()
 			break;
 		case ENVELOPE:
 			glLineWidth(1);
-			glColor3f(1,1,0);
+			glColor3f(0,0,0);
 			envelope.desenhaPoligono();
 			dentro = testaColisaoPorEnvelope(pontosDoCenario);
 			desenhaVerticesColoridos(dentro, Gold);
@@ -171,6 +170,9 @@ void display()
 			dentro = testaColisaoPorForcaBruta(dentro);
 			break;
 		case QUADTREE:
+			glLineWidth(1);
+			glColor3f(0,0,0);
+			envelope.desenhaPoligono();
 			dentro = *testaColisaoPorQuadtree(quadTree);
 			desenhaVerticesColoridos(dentro, Gold);
 			cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
