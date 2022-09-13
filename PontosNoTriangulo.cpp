@@ -252,28 +252,16 @@ Poligono testaColisaoPorEnvelope(Poligono pontos)
 
 bool testaColisaoDeEnvelopes(Poligono a, Poligono b)
 {
-	Ponto minA, maxA, minB, maxB;
-	a.obtemLimites(minA, maxA);
-	Ponto meioA = maxA - minA;
-	b.obtemLimites(minB, maxB);
-	Ponto meioB = maxB - minB;
+	Ponto aMin, aMax, bMin, bMax;
+	a.obtemLimites(aMin, aMax);
+	b.obtemLimites(bMin, bMax);
 
-	size_t larguraA, larguraB, alturaA, alturaB;
-	larguraA = maxA.x - minA.x;
-	larguraB = maxB.x - minB.x;
-	alturaA = maxA.y - minA.y;
-	alturaB = maxB.y - minB.y;
-
-	if (
-		meioA.x < meioB.x + larguraB &&
-		meioB.x < meioA.x + larguraA &&
-		meioA.y < meioB.y + alturaB &&
-		meioB.y < meioA.y + alturaA
-	) {
-		return true;
-	}
-
-	return false;
+	return (
+		aMin.x <= bMax.x &&
+		aMax.x >= bMin.x &&
+		aMin.y <= bMax.y &&
+		aMax.y >= bMin.y
+	);
 }
 
 Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
@@ -545,7 +533,7 @@ void init(bool lerArquivo, char *nomeDoArquivo)
 	} else {
 		// Gera ou Carrega os pontos do cenario.
 		// Note que o "aspect ratio" dos pontos deve ser o mesmo da janela.
-		geraPontos(1000, Ponto(0,0), Ponto(500,500));
+		geraPontos(100, Ponto(0,0), Ponto(500,500));
 	}
 
 	pontosDoCenario.obtemLimites(desenhoMin, desenhoMax);
