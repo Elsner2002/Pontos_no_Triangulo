@@ -4,7 +4,7 @@ PROG = Triangulo
 FONTES = Ponto.cpp Poligono.cpp Temporizador.cpp ListaDeCoresRGB.cpp PontosNoTriangulo.cpp
 
 OBJETOS = $(FONTES:.cpp=.o)
-CPPFLAGS = -g -O3 -DGL_SILENCE_DEPRECATION -Wall -g
+CPPFLAGS = -g -O3 -DGL_SILENCE_DEPRECATION -g
 
 UNAME = `uname`
 

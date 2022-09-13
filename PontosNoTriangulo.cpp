@@ -60,7 +60,7 @@ bool quadtreeDesenhada= false;
 bool quadtreeCriada=false;
 TesteDeColisao testeDeColisao = NADA;
 
-int pontosQuadtree = 5;
+int pontosQuadtree = 20;
 
 void display();
 void animate();
@@ -73,7 +73,7 @@ Poligono testaColisaoPorForcaBruta(Poligono pontos);
 Poligono testaColisaoPorEnvelope(Poligono pontos);
 Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree);
 QuadtreeNode<Poligono>* criaQuadtree(Poligono *pontos, Ponto min, Ponto max);
-void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree);
+void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree, size_t nivel);
 void posicionaEnvelope();
 void desenhaEnvelope();
 void desenhaEixos();
@@ -137,7 +137,7 @@ void display()
 	}
 
 	if (quadtreeDesenhada) {
-		desenhaQuadtree(quadTree);
+		desenhaQuadtree(quadTree, 0);
 	}
 
 	glPointSize(2);
@@ -355,23 +355,39 @@ QuadtreeNode<Poligono>* criaQuadtree(Poligono *pontos, Ponto min, Ponto max) {
 	return new QuadtreeNode<Poligono>(pontos, min, max);
 }
 
-void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree)
+void desenhaQuadtree(QuadtreeNode<Poligono> *quadtree, size_t nivel)
 {
-	glLineWidth(1);
-	glColor3f(1.0, 1.0, 1.0);
-	Poligono envelopeQuadtree = Poligono();
-	envelopeQuadtree.insereVertice(quadtree->min);
-	envelopeQuadtree.insereVertice(Ponto(quadtree->min.x, quadtree->max.y));
-	envelopeQuadtree.insereVertice(quadtree->max);
-	envelopeQuadtree.insereVertice(Ponto(quadtree->max.x, quadtree->min.y));
-	envelopeQuadtree.desenhaPoligono();
+	static const size_t NUM_CORES = 6;
+	static const float CORES[NUM_CORES][3] = {
+		{ 0.0, 0.0, 1.0 },
+		{ 1.0, 1.0, 0.0 },
+		{ 0.0, 1.0, 0.0 },
+		{ 1.0, 0.0, 1.0 },
+		{ 1.0, 0.0, 0.0 },
+		{ 0.0, 1.0, 1.0 },
+	};
+
+	const float *cores = CORES[nivel % NUM_CORES];
+
+	glBegin(GL_LINES);
+	glColor3f(cores[0], cores[1], cores[2]);
+
+	float meioX = (quadtree->min.x + quadtree->max.x) / 2;
+	float meioY = (quadtree->min.y + quadtree->max.y) / 2;
+	glVertex2f(quadtree->min.x, meioY);
+	glVertex2f(quadtree->max.x, meioY);
+	glVertex2f(meioX, quadtree->min.y);
+	glVertex2f(meioX, quadtree->max.y);
 
 	if (!quadtree->isLeaf()) {
-		desenhaQuadtree(quadtree->nw);
-		desenhaQuadtree(quadtree->ne);
-		desenhaQuadtree(quadtree->sw);
-		desenhaQuadtree(quadtree->se);
+		nivel++;
+		desenhaQuadtree(quadtree->nw, nivel);
+		desenhaQuadtree(quadtree->ne, nivel);
+		desenhaQuadtree(quadtree->sw, nivel);
+		desenhaQuadtree(quadtree->se, nivel);
 	}
+
+	glEnd();
 }
 
 void criaEnvelope() {
