@@ -174,7 +174,6 @@ void display()
 		case QUADTREE:
 			dentro = testaColisaoPorQuadtree(pontosDoCenario);
 			desenhaVerticesColoridos(dentro, Gold);
-			cout << "Usa Quadtree em " << pontosDoCenario.getNVertices()<< " pontos\n";
 			cout << "Fora da Quadtree há " << pontosDoCenario.getNVertices()-dentro.getNVertices()
 				<< " pontos\n";
 			cout << "Dentro da Quadtree há " << dentro.getNVertices()
