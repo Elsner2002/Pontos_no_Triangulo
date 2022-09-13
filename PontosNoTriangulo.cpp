@@ -59,7 +59,7 @@ bool quadtreeDesenhada= false;
 bool quadtreeCriada=true;
 TesteDeColisao testeDeColisao = NADA;
 
-int pontosQuadtree=0;
+int pontosQuadtree=9;
 
 void display();
 void animate();
