@@ -272,13 +272,7 @@ Poligono* testaColisaoPorQuadtree(QuadtreeNode<Poligono> *quadtree) {
 
 	if (testaColisaoDeEnvelopes(envelope, envelopeQuadtree)) {
 		if (quadtree->isLeaf()) {
-			if (quadtree->data != nullptr) {
-				for (size_t i = 0; i < quadtree->data->getNVertices(); i++) {
-					pontosDentroDoEnvelope->insereVertice(
-						quadtree->data->getVertice(i)
-					);
-				}
-			}
+			return quadtree->data;
 		} else {
 			Poligono *poligonos[] = {
 				testaColisaoPorQuadtree(quadtree->nw),

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "Ponto.h"
 
 template <typename T>
@@ -7,10 +9,18 @@ struct QuadtreeNode {
 	Ponto min, max;
 
 	QuadtreeNode(T *data, Ponto min, Ponto max) {
-		this->data = data;
+		this->data = new T(*data);
 		nw = ne = sw = se = nullptr;
 		this->min = min;
 		this->max = max;
+	}
+
+	~QuadtreeNode() {
+		delete nw;
+		delete ne;
+		delete sw;
+		delete se;
+		delete data;
 	}
 
 	QuadtreeNode(
